@@ -1057,6 +1057,12 @@ class RayPPOTrainer:
         # load checkpoint before doing anything
         self._load_checkpoint()
 
+        if os.environ.get("DEBUGPY_ACTIVE") != "1":
+            os.environ["DEBUGPY_ACTIVE"] = "1"
+            import debugpy
+            debugpy.listen(("0.0.0.0", 5678))
+            debugpy.wait_for_client()
+
         # perform validation before training
         # currently, we only support validation using the reward_function.
         if self.val_reward_fn is not None and self.config.trainer.get("val_before_train", True):
@@ -1080,12 +1086,6 @@ class RayPPOTrainer:
             and self.config.actor_rollout_ref.rollout.multi_turn.enable
         )
 
-        if os.environ.get("DEBUGPY_ACTIVE") != "1":
-            os.environ["DEBUGPY_ACTIVE"] = "1"
-            import debugpy
-            debugpy.listen(("0.0.0.0", 5678))
-            debugpy.wait_for_client()
-        
         for epoch in range(self.config.trainer.total_epochs):
             for batch_dict in self.train_dataloader:
                 do_profile = (
