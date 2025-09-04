@@ -374,6 +374,7 @@ class RayPPOTrainer:
         config = self.config
         # number of GPUs total
         n_gpus = config.trainer.n_gpus_per_node * config.trainer.nnodes
+        print(f"config.actor_rollout_ref.actor.strategy: {config.actor_rollout_ref.actor.strategy}")
         if config.actor_rollout_ref.actor.strategy == "megatron":
             model_parallel_size = (
                 config.actor_rollout_ref.actor.megatron.tensor_model_parallel_size
