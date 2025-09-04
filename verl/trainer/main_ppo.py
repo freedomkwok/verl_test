@@ -73,7 +73,6 @@ def run_ppo(config) -> None:
                 }
             },
             num_cpus=config.ray_init.num_cpus,
-            local_mode=True
         )
 
     # Create a remote instance of the TaskRunner class, and
