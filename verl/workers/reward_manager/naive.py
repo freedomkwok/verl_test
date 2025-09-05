@@ -58,7 +58,7 @@ class NaiveRewardManager:
 
         for i in range(len(data)):
             data_item = data[i]  # DataProtoItem
-
+            print(f"data_item.non_tensor_batch {data_item.non_tensor_batch.keys()}")
             prompt_ids = data_item.batch["prompts"]
 
             prompt_length = prompt_ids.shape[-1]
