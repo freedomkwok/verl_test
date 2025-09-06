@@ -801,6 +801,8 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
     @DistProfiler.annotate(color="green")
     def compute_similarity(self, data: DataProto):
         """Compute similarity scores between generated text and ground truth."""
+        import numpy as np
+        
         assert self._is_actor
         if self._is_offload_param:
             load_fsdp_model_to_gpu(self.actor_module_fsdp)
@@ -825,7 +827,13 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
             generated_texts = data.batch.get("generated_text", [])
         
         # Ground truth should be in non_tensor_batch
-        ground_truths = data.non_tensor_batch["reward_model"].get("ground_truth", "")
+        reward_model_data = data.non_tensor_batch["reward_model"]
+        if isinstance(reward_model_data, np.ndarray):
+            # Extract ground_truth from array of dictionaries
+            ground_truths = [item.get("ground_truth", "") for item in reward_model_data]
+        else:
+            # Fallback for other formats
+            ground_truths = [reward_model_data.get("ground_truth", "")]
         
         similarities = []
         for gen_text, gt_text in zip(generated_texts, ground_truths):
