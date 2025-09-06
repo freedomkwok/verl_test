@@ -1120,6 +1120,7 @@ class RayPPOTrainer:
                     non_tensor_batch_keys_to_pop.append("interaction_kwargs")
                 if "agent_name" in batch.non_tensor_batch:
                     non_tensor_batch_keys_to_pop.append("agent_name")
+
                 gen_batch = batch.pop(
                     batch_keys=batch_keys_to_pop,
                     non_tensor_batch_keys=non_tensor_batch_keys_to_pop,
@@ -1186,6 +1187,10 @@ class RayPPOTrainer:
 
                     # compute global_valid tokens
                     batch.meta_info["global_token_num"] = torch.sum(batch.batch["attention_mask"], dim=-1).tolist()
+
+                    with marked_timer("reward_compute", timing_raw, color="pink"):
+                        similarity = self.actor_rollout_wg.compute_similarity(batch)
+                        batch.batch["extra_info"]["similarity_scores"] = similarity
 
                     with marked_timer("reward", timing_raw, color="yellow"):
                         # compute reward model score

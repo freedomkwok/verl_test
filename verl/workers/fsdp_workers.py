@@ -797,6 +797,88 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
         return output
 
     @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)
+    @DistProfiler.annotate(color="green")
+    def compute_similarity(self, data: DataProto):
+        """Compute similarity scores between generated text and ground truth."""
+        assert self._is_actor
+        if self._is_offload_param:
+            load_fsdp_model_to_gpu(self.actor_module_fsdp)
+
+        data = data.to(get_device_id())
+        
+        # Extract texts from data
+        # responses are token IDs, need to decode them to text
+        response_tokens = data.batch.get("responses", [])
+        if len(response_tokens) > 0 and torch.is_tensor(response_tokens[0]):
+            # Decode token IDs to text
+            generated_texts = []
+            for tokens in response_tokens:
+                if torch.is_tensor(tokens):
+                    # Remove padding tokens and decode
+                    decoded_text = self.tokenizer.decode(tokens, skip_special_tokens=True)
+                    generated_texts.append(decoded_text)
+                else:
+                    generated_texts.append(str(tokens))
+        else:
+            # Fallback to generated_text if responses not available
+            generated_texts = data.batch.get("generated_text", [])
+        
+        # Ground truth should be in non_tensor_batch
+        ground_truths = data.non_tensor_batch["reward_model"].get("ground_truth", "")
+        
+        similarities = []
+        for gen_text, gt_text in zip(generated_texts, ground_truths):
+            # Compute embedding-based similarity
+            similarity = self._compute_text_similarity(gen_text, gt_text)
+            similarities.append(similarity)
+        
+        if self._is_offload_param:
+            offload_fsdp_model_to_cpu(self.actor_module_fsdp)
+            
+        return similarities
+
+    def _compute_text_similarity(self, text_a: str, text_b: str) -> float:
+        """Compute similarity between two texts using model embeddings."""
+        try:
+            # Get embeddings using the actor model
+            emb_a = self._get_text_embedding(text_a)
+            emb_b = self._get_text_embedding(text_b)
+            
+            if emb_a is None or emb_b is None:
+                return 0.0
+                
+            # Compute cosine similarity
+            import torch.nn.functional as F
+            similarity = F.cosine_similarity(emb_a, emb_b, dim=0).item()
+            
+            return max(0.0, similarity)
+            
+        except Exception as e:
+            print(f"Error computing similarity: {e}")
+            return 0.0
+
+    def _get_text_embedding(self, text: str):
+        """Get embedding for text using the actor model."""
+        try:
+            inputs = self.tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
+            inputs = inputs.to(get_device_id())
+            
+            with torch.no_grad():
+                outputs = self.actor.actor_module(**inputs, output_hidden_states=True)
+                hidden_states = outputs.hidden_states[-1]  # [1, seq_len, hidden_size]
+                attention_mask = inputs['attention_mask']
+                
+                # Mean pooling
+                mask = attention_mask.unsqueeze(-1).expand(hidden_states.size())
+                embedding = (hidden_states * mask).sum(dim=1) / mask.sum(dim=1)
+                
+            return embedding.squeeze(0)  # [hidden_size]
+            
+        except Exception as e:
+            print(f"Error getting embedding: {e}")
+            return None
+
+    @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)
     @DistProfiler.annotate(color="olive")
     def compute_ref_log_prob(self, data: DataProto):
         if self._is_lora:
