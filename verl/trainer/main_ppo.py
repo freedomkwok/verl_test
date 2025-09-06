@@ -51,15 +51,8 @@ def trainer_dict_to_dataclass(conf: DictConfig):
 
 @hydra.main(config_path="config", config_name="ppo_trainer", version_base=None)
 def main(config_dict):
-    if os.environ.get("DEBUGPY_ACTIVE") != "1":
-        os.environ["DEBUGPY_ACTIVE"] = "1"
-        import debugpy
-        debugpy.listen(("0.0.0.0", 5678))
-        debugpy.wait_for_client()
-
     config = trainer_dict_to_dataclass(config_dict)
     run_ppo(config)
-
 
 # Define a function to run the PPO-like training process
 def run_ppo(config) -> None:

@@ -203,6 +203,12 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
             self.config.ref.log_prob_micro_batch_size //= self.device_mesh.size() // self.ulysses_sequence_parallel_size
             self.config.ref.log_prob_micro_batch_size_per_gpu = self.config.ref.log_prob_micro_batch_size
 
+        if os.environ.get("DEBUGPY_ACTIVE") != "1":
+            os.environ["DEBUGPY_ACTIVE"] = "1"
+            import debugpy
+            debugpy.listen(("0.0.0.0", 5678))
+            debugpy.wait_for_client()
+
     def _build_model_optimizer(
         self,
         model_path,
