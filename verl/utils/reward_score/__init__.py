@@ -105,7 +105,7 @@ def default_compute_score(
         from . import gmail
         res = gmail.compute_score(solution_str,
                                     ground_truth,
-                                    extra_info=None)
+                                    extra_info)
     else:
         raise NotImplementedError(f"Reward function is not implemented for {data_source=}")
 
