@@ -20,15 +20,15 @@ def compute_score(
         Reward score (1.0 for correct, -1.0 for incorrect)
     """
     # Limit solution length for efficiency
-    original_success = extra_info.get("original_success", False)
+    original_has_finish = extra_info.get("original_has_finish", False)
     success = extra_info.get("success", False)
     
     reward = 0.0
-    if original_success and success:
+    if original_has_finish and success:
         reward += 0.5
-    elif original_success and not success:
+    elif original_has_finish and not success:
         reward += -0.8
-    elif not original_success and success:
+    elif not original_has_finish and success:
         reward += 1.0
 
     similarity_scores = extra_info.get("similarity_scores", 0.8)
