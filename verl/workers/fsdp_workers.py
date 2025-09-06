@@ -848,7 +848,7 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
         if self._is_offload_param:
             offload_fsdp_model_to_cpu(self.actor_module_fsdp)
             
-        return data
+        return data.to("cpu")
 
     def _compute_text_similarity(self, text_a: str, text_b: str) -> float:
         """Compute similarity between two texts using model embeddings."""
