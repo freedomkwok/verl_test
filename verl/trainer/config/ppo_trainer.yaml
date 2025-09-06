@@ -1079,3 +1079,9 @@ ray_init:
 
   # Path to save Ray timeline JSON for performance profiling
   timeline_json_file: null
+
+env:
+  env_name: gmail
+  seed: 0
+  max_steps: 10
+  projection_f: null
