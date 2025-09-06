@@ -801,6 +801,12 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
     @DistProfiler.annotate(color="green")
     def compute_similarity(self, data: DataProto):
         """Compute similarity scores between generated text and ground truth."""
+        if os.environ.get("DEBUGPY_ACTIVE") != "1":
+            os.environ["DEBUGPY_ACTIVE"] = "1"
+            import debugpy
+            debugpy.listen(("0.0.0.0", 5678))
+            debugpy.wait_for_client()
+            
         import numpy as np
         
         assert self._is_actor
