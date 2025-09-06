@@ -806,9 +806,9 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
             import debugpy
             debugpy.listen(("0.0.0.0", 5678))
             debugpy.wait_for_client()
-            
+
         import numpy as np
-        
+    
         assert self._is_actor
         if self._is_offload_param:
             load_fsdp_model_to_gpu(self.actor_module_fsdp)
@@ -818,39 +818,37 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
         # Extract texts from data
         # responses are token IDs, need to decode them to text
         response_tokens = data.batch.get("responses", [])
-        if len(response_tokens) > 0 and torch.is_tensor(response_tokens[0]):
-            # Decode token IDs to text
-            generated_texts = []
-            for tokens in response_tokens:
-                if torch.is_tensor(tokens):
-                    # Remove padding tokens and decode
-                    decoded_text = self.tokenizer.decode(tokens, skip_special_tokens=True)
-                    generated_texts.append(decoded_text)
-                else:
-                    generated_texts.append(str(tokens))
-        else:
-            # Fallback to generated_text if responses not available
-            generated_texts = data.batch.get("generated_text", [])
-        
-        # Ground truth should be in non_tensor_batch
-        reward_model_data = data.non_tensor_batch["reward_model"]
+        reward_model_data = data.non_tensor_batch.get("reward_model", [])
+        extra_info = data.non_tensor_batch.get("extra_info", [{} for _ in range(len(response_tokens))])
+
+        # Normalize reward_model_data
         if isinstance(reward_model_data, np.ndarray):
-            # Extract ground_truth from array of dictionaries
-            ground_truths = [item.get("ground_truth", "") for item in reward_model_data]
-        else:
-            # Fallback for other formats
-            ground_truths = [reward_model_data.get("ground_truth", "")]
-        
-        similarities = []
-        for gen_text, gt_text in zip(generated_texts, ground_truths):
-            # Compute embedding-based similarity
+            reward_model_data = reward_model_data.tolist()
+        if isinstance(reward_model_data, dict):
+            reward_model_data = [reward_model_data] * len(response_tokens)
+
+        # Ensure extra_info length
+        if len(extra_info) < len(response_tokens):
+            extra_info += [{} for _ in range(len(response_tokens) - len(extra_info))]
+
+        # Main loop: decode + compute similarity
+        for i, (resp_token, gt_data) in enumerate(zip(response_tokens, reward_model_data)):
+            if torch.is_tensor(resp_token):
+                gen_text = self.tokenizer.decode(resp_token, skip_special_tokens=True)
+            else:
+                gen_text = str(resp_token)
+
+            gt_text = gt_data.get("ground_truth", "")
             similarity = self._compute_text_similarity(gen_text, gt_text)
-            similarities.append(similarity)
-        
+            extra_info[i]["similarity"] = float(similarity)
+
+        # Save updated info
+        data.non_tensor_batch["extra_info"] = extra_info
+           
         if self._is_offload_param:
             offload_fsdp_model_to_cpu(self.actor_module_fsdp)
             
-        return similarities
+        return data
 
     def _compute_text_similarity(self, text_a: str, text_b: str) -> float:
         """Compute similarity between two texts using model embeddings."""
