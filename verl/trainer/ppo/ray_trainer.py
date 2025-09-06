@@ -367,8 +367,15 @@ class RayPPOTrainer:
         else:
             raise NotImplementedError
 
+        if os.environ.get("DEBUGPY_ACTIVE") != "1":
+            os.environ["DEBUGPY_ACTIVE"] = "1"
+            import debugpy
+            debugpy.listen(("0.0.0.0", 5678))
+            debugpy.wait_for_client()
+
         self._validate_config()
         self._create_dataloader(train_dataset, val_dataset, collate_fn, train_sampler)
+
 
     def _validate_config(self):
         config = self.config
@@ -1057,11 +1064,6 @@ class RayPPOTrainer:
         # load checkpoint before doing anything
         self._load_checkpoint()
 
-        if os.environ.get("DEBUGPY_ACTIVE") != "1":
-            os.environ["DEBUGPY_ACTIVE"] = "1"
-            import debugpy
-            debugpy.listen(("0.0.0.0", 5678))
-            debugpy.wait_for_client()
 
         # perform validation before training
         # currently, we only support validation using the reward_function.
