@@ -31,7 +31,7 @@ def compute_score(
     elif not original_success and success:
         reward += 1.0
 
-    similarity_scores = extra_info.get("similarity_scores", [])
+    similarity_scores = extra_info.get("similarity_scores", 0.8)
     reward += (similarity_scores - 0.8)
     
     return {
