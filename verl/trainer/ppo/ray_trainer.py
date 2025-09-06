@@ -367,11 +367,11 @@ class RayPPOTrainer:
         else:
             raise NotImplementedError
 
-        # if os.environ.get("DEBUGPY_ACTIVE") != "1":
-        #     os.environ["DEBUGPY_ACTIVE"] = "1"
-        #     import debugpy
-        #     debugpy.listen(("0.0.0.0", 5678))
-        #     debugpy.wait_for_client()
+        if os.environ.get("DEBUGPY_ACTIVE") != "1":
+            os.environ["DEBUGPY_ACTIVE"] = "1"
+            import debugpy
+            debugpy.listen(("0.0.0.0", 5678))
+            debugpy.wait_for_client()
 
         self._validate_config()
         self._create_dataloader(train_dataset, val_dataset, collate_fn, train_sampler)
