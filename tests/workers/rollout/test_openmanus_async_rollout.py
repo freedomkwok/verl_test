@@ -35,7 +35,7 @@ from utils_sglang import (
 from verl import DataProto
 from verl.utils.config import omega_conf_to_dataclass
 from verl.workers.config import HFModelConfig, RolloutConfig
-
+from torch.distributed.device_mesh import init_device_mesh
 # from verl.workers.rollout.openmanus_rollout import OpenManusRollout
 from verl.workers.rollout.sglang_rollout.sglang_rollout import SGLangRollout
 

@@ -30,7 +30,7 @@ from utils_sglang import (
     load_tokenizer_and_model,
     prepare_inputs,
 )
-
+from torch.distributed.device_mesh import init_device_mesh
 from verl import DataProto
 from verl.utils.config import omega_conf_to_dataclass
 from verl.workers.config import HFModelConfig, RolloutConfig
@@ -42,8 +42,8 @@ def test_async_sglang_rollout_w_interaction():
     initialize_global_process_group()
     clean_torchelastic_env()
 
-    max_prompt_length = 32
-    max_response_length = 16
+    max_prompt_length = 320
+    max_response_length = 160
     dtype = "bfloat16"
     tensor_parallel_size = 1
     local_model_path = "/data/models/QWEN1_5B_0815_A"
