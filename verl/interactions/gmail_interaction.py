@@ -122,7 +122,7 @@ class GmailInteraction(BaseInteraction):
             tool_results = await self._execute_tool_calls(latest_message["tool_calls"])
             return False, tool_results, 0.0, {"tool_calls": latest_message["tool_calls"]}
         
-        job_id = kwargs.get("job_id", 1)
+        job_id = kwargs.get("job_id", 0)
         # Handle environment stepping if we have an environment
         if instance_id in self._instance_dict:
             instance_data = self._instance_dict[instance_id]

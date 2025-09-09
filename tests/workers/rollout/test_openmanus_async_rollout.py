@@ -57,12 +57,11 @@ def test_async_openmanus_rollout():
     preencode_prompts = [
         [{"role": "user", "content": prompt, "tool_calls": None}]
         for prompt in [
-            "Check my emails and schedule a meeting with John for tomorrow at 2pm"
+            "Check my emails and schedule a meeting with John for tomorrow at 2pm",
+            "I am going to the gym"
         ]
     ]
     
-
-
     # OpenManus environment configuration
     env_configs = [
         {
