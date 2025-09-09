@@ -44,11 +44,6 @@ from verl.workers.sharding_manager.base import BaseShardingManager
 from verl.workers.sharding_manager.fsdp_sglang import FSDPSGLangShardingManager
 from verl.workers.config.model import HFModelConfig
 
-def setup_distributed():
-    """Initialize distributed environment if not already initialized."""
-    if not dist.is_initialized():
-        dist.init_process_group(backend="nccl" if torch.cuda.is_available() else "gloo")
-
 
 def test_async_openmanus_rollout():
     """Test OpenManusRollout with Gmail environment interaction."""
@@ -59,7 +54,8 @@ def test_async_openmanus_rollout():
     tensor_parallel_size = 1
     local_model_path = "/data/models/QWEN1_5B_0815_A"
 
-    setup_distributed()
+    initialize_global_process_group()
+    clean_torchelastic_env()
 
     tokenizer, actor_model = load_tokenizer_and_model(local_model_path)
 
