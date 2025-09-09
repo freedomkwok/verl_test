@@ -117,7 +117,7 @@ def test_async_openmanus_rollout():
             "tool_config_path": None,
             "interaction_config_path": "examples/sglang_multiturn/config/interaction_config/gmail_interaction_config.yaml",
             "use_inference_chat_template": False,
-            "tokenization_sanity_check_mode": "off",
+            "tokenization_sanity_check_mode": "disable",
         },
 
         # Sampling configs
