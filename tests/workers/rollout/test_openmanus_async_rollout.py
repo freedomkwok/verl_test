@@ -39,7 +39,7 @@ from utils_sglang import (
 from verl import DataProto
 
 # from verl.workers.rollout.openmanus_rollout import OpenManusRollout
-from verl.workers.rollout.sglang_rollout import SGLangRollout
+from verl.workers.rollout.sglang_rollout.sglang_rollout import SGLangRollout
 from verl.workers.sharding_manager.base import BaseShardingManager
 from verl.workers.sharding_manager.fsdp_sglang import FSDPSGLangShardingManager
 
