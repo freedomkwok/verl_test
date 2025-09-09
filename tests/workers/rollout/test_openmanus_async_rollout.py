@@ -56,7 +56,7 @@ def test_async_openmanus_rollout():
     max_response_length = 5000
     dtype = "bfloat16"
     tensor_parallel_size = 1
-    local_model_path = "/data/models/QWEN1_5B_0815_A1"
+    local_model_path = "/data/models/QWEN1_5B_0815_A"
 
     setup_distributed()
 

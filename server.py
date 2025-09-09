@@ -195,14 +195,14 @@ mkdir -p /workspace/OpenRL2 && mkdir -p /data/verl_checkpoints && mkdir -p /data
 mkdir -p /output/logs/ && cd /workspace/OpenRL2 && git init && git remote add origin https://$GH_TOKEN@github.com/freedomkwok/OpenRL.git && git fetch --all  && git checkout -b main_09_01 origin/main_09_01 && git pull && git submodule update --init --recursive \
 && cd /workspace/OpenRL2 && conda create -n openrl python=3.10 -y && conda activate openrl && cd /workspace/OpenRL2  && pip install -e . && pip uninstall verl -y && cd /workspace/OpenRL2/verl && pip install -e '.[sglang,gpu]' && pip install flash-attn --no-build-isolation
 
-conda create -n openrl2 python=3.11 -y && conda activate openrl2 && pip install -e '.[sglang]' 
 
 mkdir -p /data/models && mkdir -p /workspace/OpenRL2 && cd /workspace/OpenRL2 \
 git init && git remote add origin https://$GH_TOKEN@github.com/freedomkwok/OpenRL.git \
-conda create -n openrl python=3.12 -y && conda activate openrl2 && cd /workspace/OpenRL2  && pip install -e . && pip uninstall verl -y && cd /workspace/OpenRL2/verl && pip install -e '.[sglang,gpu]' && pip install flash-attn --no-build-isolation
+conda create -n openrl2 python=3.11 -y && conda activate openrl2 && pip install -e '.[sglang]' 
 
 
-mkdir -p /data/models && mkdir -p /workspace/OpenRL2 \
+conda create -n openrl2 python=3.11 -y && conda activate openrl2 &&  && pip install -e . && pip uninstall verl -y && cd /workspace/OpenRL2/verl && pip install -e '.[sglang,gpu]' && pip install flash-attn --no-build-isolation
+
 CUDA_VISIBLE_DEVICES=0 NCCL_DEBUG=INFO NCCL_DEBUG_SUBSYS=ALL NCCL_P2P_DISABLE=0 TORCH_DISTRIBUTED_DEBUG=DETAIL PYTHONUNBUFFERED=1 DEBUGGY_LOCAL=True SGLANG_LOG_LEVEL=INFO \
 torchrun --nproc_per_node=1 tests/workers/rollout/test_openmanus_async_rollout.py
 
