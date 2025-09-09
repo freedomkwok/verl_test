@@ -22,10 +22,6 @@ import numpy as np
 import torch
 from tensordict import TensorDict
 import torch.distributed as dist
-from torch.distributed.device_mesh import init_device_mesh
-from verl.utils.device import get_device_name
-from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
-from torch.distributed.fsdp import MixedPrecision, ShardingStrategy
 from utils_sglang import (
     are_lists_similar,
     clean_torchelastic_env,
@@ -37,12 +33,11 @@ from utils_sglang import (
 )
 
 from verl import DataProto
+from verl.utils.config import omega_conf_to_dataclass
+from verl.workers.config import HFModelConfig, RolloutConfig
 
 # from verl.workers.rollout.openmanus_rollout import OpenManusRollout
 from verl.workers.rollout.sglang_rollout.sglang_rollout import SGLangRollout
-from verl.workers.sharding_manager.base import BaseShardingManager
-from verl.workers.sharding_manager.fsdp_sglang import FSDPSGLangShardingManager
-from verl.workers.config.model import HFModelConfig
 
 
 def test_async_openmanus_rollout():
@@ -59,7 +54,6 @@ def test_async_openmanus_rollout():
 
     tokenizer, actor_model = load_tokenizer_and_model(local_model_path)
 
-    # Gmail-specific prompts for testing
     preencode_prompts = [
         [{"role": "user", "content": prompt, "tool_calls": None}]
         for prompt in [
@@ -84,22 +78,8 @@ def test_async_openmanus_rollout():
     ]
     input_ids, attention_mask, position_ids = prepare_inputs(tokenizer, prompts, max_prompt_length)
 
-    fsdp_device_mesh = init_device_mesh("cuda", mesh_shape=(tensor_parallel_size,), mesh_dim_names=("fsdp",))
-
-    fsdp_model = None
-    if dist.get_world_size() == 1:
-        fsdp_model = actor_model  # no wrap
-    else:
-        fsdp_model = FSDP(
-            actor_model,
-            use_orig_params=True,
-            device_id=fsdp_device_mesh["fsdp"].get_local_rank(),
-            mixed_precision=MixedPrecision(param_dtype=getattr(torch, dtype)),
-            sharding_strategy=ShardingStrategy.FULL_SHARD,
-            device_mesh=fsdp_device_mesh,
-        )
-
-    # Create OpenManus rollout configuration
+    # Create a temporary interaction config file for testing
+    import tempfile
     from omegaconf import OmegaConf
 
     rollout_config = OmegaConf.create({
@@ -120,7 +100,7 @@ def test_async_openmanus_rollout():
         "ignore_eos": False,
         "max_num_batched_tokens": 8192,
 
-        # Required length configs
+                # Required length configs
         "max_response_length": max_response_length,
         "max_prompt_length": max_prompt_length,
         "prompt_length": max_prompt_length,
@@ -137,17 +117,7 @@ def test_async_openmanus_rollout():
             "use_inference_chat_template": False,
             "tokenization_sanity_check_mode": "off",
         },
-        
-        # OpenManus environment configs
-        "env": {
-            "env_name": "gmail",
-            "env_ports": [8000],
-            "env_server_base": "http://127.0.0.1",
-            "env_server_port": 8000,
-            "timeout": 600,
-            "max_turns": 10,
-        },
-        
+
         # Sampling configs
         "calculate_log_probs": True,
         "temperature": 0.7,
@@ -161,97 +131,66 @@ def test_async_openmanus_rollout():
         "do_sample": True,
     })
 
-    inference_device_mesh_cpu = init_device_mesh(
-        'cuda', mesh_shape=(1, tensor_parallel_size, 1), mesh_dim_names=("dp", "tp", "pp")
-    )
+    # rollout_config = get_rollout_config(
+    #     max_response_length, max_prompt_length, dtype, tensor_parallel_size, None, interaction_config_path
+    # )
+    # rollout_config: RolloutConfig = omega_conf_to_dataclass(rollout_config, dataclass_type=RolloutConfig)
 
-    # Create proper HFModelConfig object
     model_config = HFModelConfig(path=local_model_path)
+
+    input_ids, attention_mask, position_ids = prepare_inputs(tokenizer, preencode_prompts, max_prompt_length)
+
+    hf_response_tokens = generate_hf_output(actor_model, input_ids, attention_mask, tokenizer, max_response_length)
 
     rollout = SGLangRollout(
         config=rollout_config,
         model_config=model_config,
-        device_mesh=inference_device_mesh_cpu,
+        device_mesh=None,
     )
-    # Use base sharding manager for OpenManus (no special sharding needed)
-    rollout_sharding_manager = FSDPSGLangShardingManager(
-        module=fsdp_model,
-        inference_engine=rollout._engine,
-        model_config=model_config,
-        rollout_config=rollout_config,
-        full_params=True,
-        device_mesh=inference_device_mesh_cpu,
+    prompt_dict = TensorDict(
+        {
+            "input_ids": input_ids,
+            "attention_mask": attention_mask,
+            "position_ids": position_ids,
+        },
+        batch_size=input_ids.shape[0],
+    )
+    print(f"preprocessed {input_ids.shape=}")
+
+    messages = np.asarray(preencode_prompts)
+    interaction_kwargs = [
+        {"name": "gmail", "query": "Check my emails and schedule a meeting with John for tomorrow at 2pm", "ground_truth": "Meeting scheduled with John for tomorrow at 2pm"},
+    ]
+    prompts = DataProto(
+        batch=prompt_dict,
+        non_tensor_batch={"raw_prompt": messages, "interaction_kwargs": np.asarray(interaction_kwargs)},
     )
 
-    with rollout_sharding_manager:
-        prompt_dict = TensorDict(
-            {
-                "input_ids": input_ids,
-                "attention_mask": attention_mask,
-                "position_ids": position_ids,
-            },
-            batch_size=input_ids.shape[0],
-        )
-        print(f"preprocessed {input_ids.shape=}")
+    prompts.meta_info.update(
+        {
+            "eos_token_id": tokenizer.eos_token_id,
+            "pad_token_id": tokenizer.pad_token_id,
+        }
+    )
 
-        messages = np.asarray(preencode_prompts)
-        prompts = DataProto(
-            batch=prompt_dict,
-            non_tensor_batch={
-                "raw_prompt": messages, 
-                "env_configs": np.asarray(env_configs),
-                "reward_model": np.asarray([
-                    {"ground_truth": "Meeting scheduled with John for tomorrow at 2pm", "style": "rule"},
-                    {"ground_truth": "Replied to Sarah's email with 'Thanks for the update'", "style": "rule"},
-                    {"ground_truth": "Created new email to team about project status", "style": "rule"},
-                ])
-            },
-        )
+    # log_gpu_memory_usage("Before generating sequences", logger=None)
+    output = rollout.generate_sequences(prompts=prompts)
+    print(f"generated {output.batch['responses'].shape=}")
+    # log_gpu_memory_usage("After generating sequences", logger=None)
 
-        prompts.meta_info.update(
-            {
-                "eos_token_id": tokenizer.eos_token_id,
-                "pad_token_id": tokenizer.pad_token_id,
-            }
-        )
+    openmanus_output = output.to("cpu")
+    openmanus_response_tokens = tokenizer.batch_decode(openmanus_output.batch["responses"],
+                                                    skip_special_tokens=True,       # removes <pad>, <eos>, etc.
+                                                    clean_up_tokenization_spaces=True)
 
-        prompts = rollout_sharding_manager.preprocess_data(prompts)
-        print("Before generating sequences with OpenManus")
-        
-        # Note: This will fail if Gmail environment servers are not running
-        # In a real test environment, you would need to mock the environment
-        try:
-            output = rollout.generate_sequences(prompts=prompts)
-            print(f"generated {output.batch['responses'].shape=}")
-            output = rollout_sharding_manager.postprocess_data(output)
-            print(f"postprocessed {output.batch['responses'].shape=}")
-            openmanus_output = output.to("cpu")
+    print(f"hf response: {hf_response_tokens}")
+    print(f"openmanus response: {openmanus_response_tokens}")
+      
+    print("OpenManus Rollout Test Passed!")
 
-            openmanus_response_tokens = tokenizer.batch_decode(openmanus_output.batch["responses"])
-            print(f"openmanus response: {openmanus_response_tokens}")
-            
-            # Check if we have token-level rewards
-            if "token_level_rewards" in openmanus_output.batch:
-                print(f"token_level_rewards shape: {openmanus_output.batch['token_level_rewards'].shape}")
-            
-            print("OpenManus Rollout Test Passed!")
-            
-        except Exception as e:
-            print(f"OpenManus test failed (expected if Gmail servers not running): {e}")
-            print("This is expected in test environment without actual Gmail servers")
-            
-            # For testing purposes, create a mock output
-            mock_responses = torch.randint(0, tokenizer.vocab_size, (input_ids.shape[0], max_response_length))
-            mock_output = DataProto(
-                batch=TensorDict({
-                    "responses": mock_responses,
-                    "token_level_rewards": torch.zeros(input_ids.shape[0], input_ids.shape[1] + max_response_length),
-                }, batch_size=input_ids.shape[0]),
-                non_tensor_batch=prompts.non_tensor_batch,
-                meta_info=prompts.meta_info,
-            )
-            openmanus_output = mock_output.to("cpu")
-            print("Created mock output for testing")
+    # Clean up temporary config file
+    import os
+    os.unlink(interaction_config_path)
 
     torch.distributed.barrier()
     torch.distributed.destroy_process_group()

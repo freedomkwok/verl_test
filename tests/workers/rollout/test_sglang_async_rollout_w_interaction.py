@@ -127,7 +127,9 @@ def test_async_sglang_rollout_w_interaction():
 
     sglang_output = output.to("cpu")
 
-    sglang_response_tokens = tokenizer.batch_decode(sglang_output.batch["responses"])
+    sglang_response_tokens = tokenizer.batch_decode(sglang_output.batch["responses"],
+                                                    skip_special_tokens=True,       # removes <pad>, <eos>, etc.
+                                                    clean_up_tokenization_spaces=True)
 
     print(f"hf response: {hf_response_tokens}")
     print(f"sglang response: {sglang_response_tokens}")
