@@ -91,10 +91,13 @@ def test_async_sglang_rollout_w_interaction():
     )
     rollout_config: RolloutConfig = omega_conf_to_dataclass(rollout_config, dataclass_type=RolloutConfig)
     model_config = HFModelConfig(path=local_model_path)
+
+    device_mesh = init_device_mesh("cuda", mesh_shape=(1, tensor_parallel_size, 1), mesh_dim_names=("dp", "tp", "pp"))
+
     rollout = SGLangRollout(
         config=rollout_config,
         model_config=model_config,
-        device_mesh=None,
+        device_mesh=device_mesh,
     )
 
     prompt_dict = TensorDict(

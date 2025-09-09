@@ -142,10 +142,12 @@ def test_async_openmanus_rollout():
 
     hf_response_tokens = generate_hf_output(actor_model, input_ids, attention_mask, tokenizer, max_response_length)
 
+    device_mesh = init_device_mesh("cuda", mesh_shape=(1, tensor_parallel_size, 1), mesh_dim_names=("dp", "tp", "pp"))
+
     rollout = SGLangRollout(
         config=rollout_config,
         model_config=model_config,
-        device_mesh=None,
+        device_mesh=device_mesh,
     )
     prompt_dict = TensorDict(
         {
