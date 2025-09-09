@@ -1015,7 +1015,9 @@ class SGLangRollout(BaseRollout):
         self, _req: AsyncRolloutRequest, sampling_params: dict, image_data: Optional[list[Any]] = None
     ) -> dict:
         generation_prompt_ids = _req.get_generation_prompt_ids(self.processing_class)
-        return await self._handle_engine_generate(generation_prompt_ids, sampling_params, image_data)
+        output = await self._handle_engine_generate(generation_prompt_ids, sampling_params, image_data)
+        output["text"] = self.processing_class.decode(output["output_ids"])
+        return output
 
     async def _handle_engine_generate(
         self, generation_prompt_ids: list[int], sampling_params: dict, image_data: Optional[list[Any]] = None
