@@ -45,7 +45,7 @@ def test_async_sglang_rollout_w_interaction():
     max_prompt_length = 32
     max_response_length = 16
     dtype = "bfloat16"
-    tensor_parallel_size = 2
+    tensor_parallel_size = 1
     local_model_path = "/data/models/QWEN1_5B_0815_A"
 
     tokenizer, actor_model = load_tokenizer_and_model(local_model_path)
