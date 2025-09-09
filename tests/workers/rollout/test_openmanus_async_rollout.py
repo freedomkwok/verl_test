@@ -44,7 +44,7 @@ def test_async_openmanus_rollout():
     """Test OpenManusRollout with Gmail environment interaction."""
 
     max_prompt_length = 3000
-    max_response_length = 5000
+    max_response_length = 1500
     dtype = "bfloat16"
     tensor_parallel_size = 1
     local_model_path = "/data/models/QWEN1_5B_0815_A"
@@ -61,6 +61,8 @@ def test_async_openmanus_rollout():
         ]
     ]
     
+
+
     # OpenManus environment configuration
     env_configs = [
         {
@@ -77,7 +79,7 @@ def test_async_openmanus_rollout():
         for message in preencode_prompts
     ]
     input_ids, attention_mask, position_ids = prepare_inputs(tokenizer, prompts, max_prompt_length)
-
+    hf_response_tokens = generate_hf_output(actor_model, input_ids, attention_mask, tokenizer, max_response_length)
     # Create a temporary interaction config file for testing
     import tempfile
     from omegaconf import OmegaConf
@@ -138,10 +140,6 @@ def test_async_openmanus_rollout():
 
     model_config = HFModelConfig(path=local_model_path)
 
-    input_ids, attention_mask, position_ids = prepare_inputs(tokenizer, preencode_prompts, max_prompt_length)
-
-    hf_response_tokens = generate_hf_output(actor_model, input_ids, attention_mask, tokenizer, max_response_length)
-
     device_mesh = init_device_mesh("cuda", mesh_shape=(1, tensor_parallel_size, 1), mesh_dim_names=("dp", "tp", "pp"))
 
     rollout = SGLangRollout(
@@ -149,6 +147,7 @@ def test_async_openmanus_rollout():
         model_config=model_config,
         device_mesh=device_mesh,
     )
+
     prompt_dict = TensorDict(
         {
             "input_ids": input_ids,
@@ -192,11 +191,12 @@ def test_async_openmanus_rollout():
 
     # Clean up temporary config file
     import os
+
     os.unlink(interaction_config_path)
 
     torch.distributed.barrier()
     torch.distributed.destroy_process_group()
- 
+
 
 if __name__ == "__main__":
     import debugpy
