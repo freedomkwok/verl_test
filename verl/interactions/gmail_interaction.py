@@ -76,7 +76,7 @@ class GmailInteraction(BaseInteraction):
         try:
             # Create environment if not exists
             if self._env_id is None:
-                create_result = self._post("create", {"env_idx": 1, "job_id": self._job_id})
+                create_result = self._post("create", {"env_idx": 0, "job_id": self._job_id})
                 self._env_id = create_result["env_idx"]
             
             # Reset environment for new interaction
