@@ -165,7 +165,7 @@ def test_async_openmanus_rollout():
     })
 
     inference_device_mesh_cpu = init_device_mesh(
-        'cuda', mesh_shape=(1, tensor_parallel_size, 1), mesh_dim_names=("fsdp",)
+        'cuda', mesh_shape=(1, tensor_parallel_size, 1), mesh_dim_names=("dp", "tp", "pp")
     )
 
     rollout = SGLangRollout(
