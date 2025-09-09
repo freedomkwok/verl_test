@@ -1,0 +1,7 @@
+interaction:
+  - name: "gmail"
+    class_name: "verl.interactions.gmail_interaction.GmailInteraction"
+    config:
+      env_server_base: "http://127.0.0.1"
+      env_server_port: 8000
+      timeout: 600
