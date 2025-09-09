@@ -137,7 +137,7 @@ def test_async_openmanus_rollout():
             "max_assistant_turns": 3,
             "max_user_turns": 2,
             "tool_config_path": None,
-            "interaction_config_path": "verl/examples/sglang_multiturn/config/interaction_config/gmail_interaction_config.yaml",
+            "interaction_config_path": "examples/sglang_multiturn/config/interaction_config/gmail_interaction_config.yaml",
             "use_inference_chat_template": False,
             "tokenization_sanity_check_mode": "off",
         },
