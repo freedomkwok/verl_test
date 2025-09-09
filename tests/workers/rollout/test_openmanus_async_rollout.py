@@ -164,15 +164,14 @@ def test_async_openmanus_rollout():
         "do_sample": True,
     })
 
-    rollout = SGLangRollout(
-        actor_module=local_model_path,
-        config=rollout_config,
-        processing_class=tokenizer,
-        model_hf_config=actor_model.config,
-    )
-
     inference_device_mesh_cpu = init_device_mesh(
         'cuda', mesh_shape=(1, tensor_parallel_size, 1), mesh_dim_names=("fsdp",)
+    )
+
+    rollout = SGLangRollout(
+        config=rollout_config,
+        model_config=actor_model.config,
+        device_mesh=inference_device_mesh_cpu,
     )
     # Use base sharding manager for OpenManus (no special sharding needed)
     rollout_sharding_manager = FSDPSGLangShardingManager(
