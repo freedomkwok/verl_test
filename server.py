@@ -197,8 +197,8 @@ mkdir -p /output/logs/ && cd /workspace/OpenRL2 && git init && git remote add or
 
 
 mkdir -p /data/models && mkdir -p /workspace/OpenRL2 && cd /workspace/OpenRL2 \
-git init && git remote add origin https://$GH_TOKEN@github.com/freedomkwok/OpenRL.git \
-conda create -n openrl2 python=3.11 -y && conda activate openrl2 && pip install -e '.[sglang]' 
+git init && git remote add origin https://github.com/freedomkwok/verl_test.git && git pull && git checkout -b main origin/main  \ 
+conda create -n openrl2 python=3.10 -y && conda activate openrl2 && pip install -e '.[sglang]' && pip install flash-attn --no-build-isolation
 
 
 conda create -n openrl2 python=3.11 -y && conda activate openrl2 &&  && pip install -e . && pip uninstall verl -y && cd /workspace/OpenRL2/verl && pip install -e '.[sglang,gpu]' && pip install flash-attn --no-build-isolation
@@ -206,7 +206,8 @@ conda create -n openrl2 python=3.11 -y && conda activate openrl2 &&  && pip inst
 CUDA_VISIBLE_DEVICES=0 NCCL_DEBUG=INFO NCCL_DEBUG_SUBSYS=ALL NCCL_P2P_DISABLE=0 TORCH_DISTRIBUTED_DEBUG=DETAIL PYTHONUNBUFFERED=1 DEBUGGY_LOCAL=True SGLANG_LOG_LEVEL=INFO \
 torchrun --nproc_per_node=1 tests/workers/rollout/test_openmanus_async_rollout.py
 
-
+CUDA_VISIBLE_DEVICES=0 NCCL_DEBUG=INFO NCCL_DEBUG_SUBSYS=ALL NCCL_P2P_DISABLE=0 TORCH_DISTRIBUTED_DEBUG=DETAIL PYTHONUNBUFFERED=1 DEBUGGY_LOCAL=True SGLANG_LOG_LEVEL=INFO \
+torchrun --nproc_per_node=1 tests/workers/rollout/test_sglang_async_rollout_w_interaction.py
 
 
 cd /workspace/OpenRL && conda create -n agent_server python=3.11 -y && conda activate agent_server && cd /workspace/OpenRL/openmanus_rl/agentgym/agentenv-gmail_calendar && pip install -e . && agentenv_gmail_calendar

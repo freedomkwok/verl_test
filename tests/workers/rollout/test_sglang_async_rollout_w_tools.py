@@ -126,4 +126,8 @@ def test_async_sglang_rollout_w_tool():
 
 
 if __name__ == "__main__":
+    import debugpy
+
+    debugpy.listen(("0.0.0.0", 5678))
+    debugpy.wait_for_client()
     test_async_sglang_rollout_w_tool()

@@ -42,7 +42,8 @@ install_requires = [
     "wandb",
     "packaging>=20.0",
     "tensorboard",
-    "debugpy"
+    "debugpy",
+    "torch-memory-saver"
 ]
 
 TEST_REQUIRES = ["pytest", "pre-commit", "py-spy", "pytest-asyncio"]
