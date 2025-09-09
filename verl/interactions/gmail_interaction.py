@@ -46,7 +46,8 @@ class GmailInteraction(BaseInteraction):
         self.env_server_base = config.get("env_server_base", "http://127.0.0.1")
         self.env_server_port = config.get("env_server_port", 8000)
         self.timeout = config.get("timeout", 600)
-        
+
+        self.max_steps = config.get("max_steps", 10)
         # Environment state
         self._env_id = None
         self._job_id = 1
@@ -73,10 +74,14 @@ class GmailInteraction(BaseInteraction):
         if instance_id is None:
             instance_id = str(uuid4())
         
+        if kwargs.get("job_id") is not None:
+            self._job_id = kwargs.get("job_id")
+        if kwargs.get("ground_truth") is not None:
+            ground_truth = kwargs.get("ground_truth")
         try:
             # Create environment if not exists
             if self._env_id is None:
-                create_result = self._post("create", {"env_idx": 1, "job_id": self._job_id})
+                create_result = self._post("create", {"env_idx": 0, "job_id": self._job_id})
                 self._env_id = create_result["env_idx"]
             
             # Reset environment for new interaction
@@ -122,14 +127,9 @@ class GmailInteraction(BaseInteraction):
             tool_results = await self._execute_tool_calls(latest_message["tool_calls"])
             return False, tool_results, 0.0, {"tool_calls": latest_message["tool_calls"]}
         
-        job_id = kwargs.get("job_id", 1)
         # Handle environment stepping if we have an environment
         if instance_id in self._instance_dict:
             instance_data = self._instance_dict[instance_id]
-            
-            if instance_data["step"] == 0:
-                self._job_id = job_id
-                self._post("reset", {"env_idx": self._env_id, "job_id": self._job_id})
 
             # Extract action from the latest message
             action = latest_message.get("content", "") if latest_message.get("role") == "assistant" else ""

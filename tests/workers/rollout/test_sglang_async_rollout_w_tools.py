@@ -38,7 +38,7 @@ from verl.workers.rollout.sglang_rollout.sglang_rollout import SGLangRollout
 
 
 def test_async_sglang_rollout_w_tool():
-    assert torch.cuda.device_count() >= 2
+    #assert torch.cuda.device_count() >= 2
     initialize_global_process_group()
     clean_torchelastic_env()
 
@@ -46,7 +46,7 @@ def test_async_sglang_rollout_w_tool():
     max_response_length = 16
     dtype = "bfloat16"
     tensor_parallel_size = 2
-    local_model_path = "Qwen/Qwen2.5-0.5B"
+    local_model_path = "/data/models/QWEN1_5B_0815_A" #"Qwen/Qwen2.5-0.5B"
 
     tokenizer, actor_model = load_tokenizer_and_model(local_model_path)
 
@@ -126,4 +126,8 @@ def test_async_sglang_rollout_w_tool():
 
 
 if __name__ == "__main__":
+    import debugpy
+
+    debugpy.listen(("0.0.0.0", 5678))
+    debugpy.wait_for_client()
     test_async_sglang_rollout_w_tool()

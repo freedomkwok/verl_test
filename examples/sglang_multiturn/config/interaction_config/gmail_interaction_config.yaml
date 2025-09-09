@@ -5,3 +5,6 @@ interaction:
       env_server_base: "http://127.0.0.1"
       env_server_port: 8000
       timeout: 600
+      env_idx: 0
+      job_id: 1
+      max_steps: 15

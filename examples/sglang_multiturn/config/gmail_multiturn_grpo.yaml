@@ -7,15 +7,55 @@ defaults:
   - _self_
 
 data:
-  max_prompt_length: 3000
+  max_prompt_length: 6000
   max_response_length: 1024
-  train_batch_size: 2
+  train_batch_size: 4
   return_raw_chat: True
 
 actor_rollout_ref:
   hybrid_engine: True
+  actor:
+    # Increase mini batch size to handle large GPU counts
+    ppo_mini_batch_size: 8  # Must be >= number of GPUs
+    ppo_micro_batch_size_per_gpu: 2
+    use_dynamic_bsz: True
+    ppo_max_token_len_per_gpu: 16384
+    n: 1  # Must match rollout.n
+
   rollout:
     name: sglang
+    mode: async
+    load_format: dummy
+    enforce_eager: True
+    free_cache_engine: True
+    n: 1  # Number of samples per prompt
+    
+    # Model and distributed configs
+    dtype: bfloat16
+    tensor_model_parallel_size: 1
+    gpu_memory_utilization: 0.5
+    ignore_eos: False
+    max_num_batched_tokens: 8192
+
+    # Length configs (correct rollout fields)
+    prompt_length: 6000
+    response_length: 1000
+    max_model_len: 7000  # prompt_length + response_length
+    
+    # Multi-turn configs
     multi_turn:
       enable: True
       max_assistant_turns: 10
+      max_user_turns: 10
+      tool_config_path: null
+      interaction_config_path: examples/sglang_multiturn/config/interaction_config/gmail_interaction_config.yaml
+      use_inference_chat_template: false
+      tokenization_sanity_check_mode: disable
+
+    # Sampling configs
+    calculate_log_probs: true
+    temperature: 0.8
+    top_p: 0.9
+    top_k: -1
+    do_sample: true
+      

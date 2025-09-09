@@ -176,7 +176,7 @@ trainer:
   resume_from_path: null
 
   # Whether to run validation before training begins
-  val_before_train: True
+  val_before_train: False
 
   # Whether to run validation only
   val_only: False

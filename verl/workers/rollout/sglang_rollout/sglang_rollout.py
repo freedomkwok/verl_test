@@ -299,6 +299,17 @@ class SGLangRollout(BaseRollout):
                 self.pad_token_id = self.processing_class.tokenizer.pad_token_id
             except AttributeError as e:
                 raise ValueError(f"Cannot get pad_token_id from processing_class {self.processing_class}") from e
+        
+        # # Only enable debugpy on rank 0 to avoid multiple debuggers
+        # current_rank = getattr(self, '_rank', int(os.environ.get("RANK", "0")))
+        # if os.environ.get("DEBUGPY_ACTIVE") != "1" and current_rank == 0:
+        #     os.environ["DEBUGPY_ACTIVE"] = "1"
+        #     import debugpy
+            
+        #     debugpy.listen(("0.0.0.0", 5678))
+        #     debugpy.wait_for_client()
+        # elif current_rank != 0:
+        #     logger.info(f"Skipping debugpy on rank {current_rank} - only rank 0 will debug")
 
     def _init_distributed_env(self, device_mesh_cpu, **kwargs):
         self._device_mesh_cpu = device_mesh_cpu
@@ -891,7 +902,7 @@ class SGLangRollout(BaseRollout):
                     )
 
                 output = await self._handle_engine_call(_req, request_sampling_params, image_data=image_data)
-                content = output["text"]
+                content = output["text"] # output["text"]
                 finish_reason_type = FinishReasonTypeEnum.from_str(output["meta_info"]["finish_reason"]["type"])
                 current_turns += 1
                 if finish_reason_type == FinishReasonTypeEnum.LENGTH:
@@ -1002,20 +1013,22 @@ class SGLangRollout(BaseRollout):
             debug_sampling_params["max_new_tokens"] = 0
             output = await self._engine.async_generate(
                 prompt=None,
-                input_ids=_req.input_ids,
+                input_ids=_req.input_ids.tolist(),
                 sampling_params=debug_sampling_params,
                 return_logprob=True,
                 logprob_start_len=0,
             )
             # len(input_token_logprobs) = len(input_tokens)-1，because logprob of 1st token is None
-            _req.output_token_ids, _req.rollout_log_probs = _extract_logprob_from_output(output)
+            _req.output_token_ids, _req.rollout_log_probs = _extract_logprob_from_output(output[0])
         return _req
 
     async def _handle_engine_call(
         self, _req: AsyncRolloutRequest, sampling_params: dict, image_data: Optional[list[Any]] = None
     ) -> dict:
         generation_prompt_ids = _req.get_generation_prompt_ids(self.processing_class)
-        return await self._handle_engine_generate(generation_prompt_ids, sampling_params, image_data)
+        output = await self._handle_engine_generate(generation_prompt_ids, sampling_params, image_data)
+        #output["text"] = self.processing_class.decode(output["output_ids"], skip_special_tokens=True, clean_up_tokenization_spaces=True)
+        return output
 
     async def _handle_engine_generate(
         self, generation_prompt_ids: list[int], sampling_params: dict, image_data: Optional[list[Any]] = None
@@ -1074,7 +1087,7 @@ class SGLangRollout(BaseRollout):
         tgt_device = prompts.batch["input_ids"].device
 
         if self._tp_rank == 0:
-            req_list = self._preprocess_prompt_to_async_rollout_requests(
+            req_list = self._preprocess_prompt_to_async_rollout_requests( # genereate kwargs
                 prompts,
             )
 
