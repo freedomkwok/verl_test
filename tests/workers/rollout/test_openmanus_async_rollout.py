@@ -42,6 +42,7 @@ from verl import DataProto
 from verl.workers.rollout.sglang_rollout.sglang_rollout import SGLangRollout
 from verl.workers.sharding_manager.base import BaseShardingManager
 from verl.workers.sharding_manager.fsdp_sglang import FSDPSGLangShardingManager
+from verl.workers.config.model import HFModelConfig
 
 def setup_distributed():
     """Initialize distributed environment if not already initialized."""
@@ -168,16 +169,19 @@ def test_async_openmanus_rollout():
         'cuda', mesh_shape=(1, tensor_parallel_size, 1), mesh_dim_names=("dp", "tp", "pp")
     )
 
+    # Create proper HFModelConfig object
+    model_config = HFModelConfig(path=local_model_path)
+
     rollout = SGLangRollout(
         config=rollout_config,
-        model_config=actor_model.config,
+        model_config=model_config,
         device_mesh=inference_device_mesh_cpu,
     )
     # Use base sharding manager for OpenManus (no special sharding needed)
     rollout_sharding_manager = FSDPSGLangShardingManager(
         module=fsdp_model,
         inference_engine=rollout._engine,
-        model_config=actor_model.config,
+        model_config=model_config,
         rollout_config=rollout_config,
         full_params=True,
         device_mesh=inference_device_mesh_cpu,
