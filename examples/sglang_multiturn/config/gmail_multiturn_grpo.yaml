@@ -7,7 +7,7 @@ defaults:
   - _self_
 
 data:
-  max_prompt_length: 6000
+  max_prompt_length: 8000
   max_response_length: 1000
   train_batch_size: 2
   return_raw_chat: True
@@ -22,7 +22,7 @@ actor_rollout_ref:
     free_cache_engine: True
     
     # Model and distributed configs
-    dtype: float16
+    dtype: bfloat16
     tensor_model_parallel_size: 1
     gpu_memory_utilization: 0.5
     ignore_eos: False

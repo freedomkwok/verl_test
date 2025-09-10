@@ -56,8 +56,8 @@ python3 -m verl.trainer.main_ppo \
     data.train_batch_size=2 \
     data.val_batch_size=1 \
     data.prompt_key='raw_prompt' \
-    data.max_prompt_length=6000 \
-    data.max_response_length=512 \
+    data.max_prompt_length=8000 \
+    data.max_response_length=1024 \
     data.filter_overlong_prompts=True \
     data.truncation='error' \
     data.return_raw_chat=True \
