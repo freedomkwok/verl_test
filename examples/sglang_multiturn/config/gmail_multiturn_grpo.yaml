@@ -17,7 +17,7 @@ actor_rollout_ref:
   rollout:
     name: sglang
     mode: async
-    load_format: dummy
+    load_format: dummy_dtensor
     enforce_eager: False
     free_cache_engine: True
     
@@ -28,18 +28,16 @@ actor_rollout_ref:
     ignore_eos: False
     max_num_batched_tokens: 8192
 
-    # Required length configs
-    max_response_length: 1000
-    max_prompt_length: 6000
+    # Length configs (correct rollout fields)
     prompt_length: 6000
     response_length: 1000
-    max_model_len: 7000  # max_prompt_length + max_response_length
+    max_model_len: 7000  # prompt_length + response_length
     
     # Multi-turn configs
     multi_turn:
       enable: True
-      max_assistant_turns: 3
-      max_user_turns: 2
+      max_assistant_turns: 10
+      max_user_turns: 10
       tool_config_path: null
       interaction_config_path: examples/sglang_multiturn/config/interaction_config/gmail_interaction_config.yaml
       use_inference_chat_template: false
@@ -50,10 +48,6 @@ actor_rollout_ref:
     temperature: 0.7
     top_p: 0.9
     top_k: -1
-    frequency_penalty: 0.0
-    presence_penalty: 0.0
-    repetition_penalty: 1.0
-    stop: []
     n: 1
     do_sample: true
       
