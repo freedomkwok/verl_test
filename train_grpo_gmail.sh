@@ -40,8 +40,7 @@ echo "EXPERIMENT_NAME: $EXPERIMENT_NAME"
 TRAIN_FILE="/workspace/OpenRL2/data/_grpo/train1.parquet"
 TEST_FILE="/workspace/OpenRL2/data/_grpo/val1.parquet"
 
-train_data_size=2
-val_data_size=1
+
 PROJECT_DIR="$(pwd)"
 CONFIG_PATH="$PROJECT_DIR/examples/sglang_multiturn/config"
 
@@ -53,7 +52,7 @@ python3 -m verl.trainer.main_ppo \
     algorithm.adv_estimator=grpo \
     data.train_files=$TRAIN_FILE \
     data.val_files=$TEST_FILE \
-    data.train_batch_size=2 \
+    data.train_batch_size=4 \
     data.val_batch_size=1 \
     data.prompt_key='raw_prompt' \
     data.max_prompt_length=8000 \
