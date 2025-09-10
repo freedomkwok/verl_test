@@ -100,6 +100,10 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.n=1 \
     actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu=1 \
     actor_rollout_ref.ref.fsdp_config.param_offload=True \
+    actor_rollout_ref.ref.strategy=fsdp2 \
+    actor_rollout_ref.actor.strategy=fsdp2 \
+    critic.strategy=fsdp2 \
+    reward_model.strategy=fsdp2 \
     critic.optim.lr=1e-5 \
     critic.model.use_remove_padding=True \
     critic.model.path=$BASE_MODEL \
