@@ -119,6 +119,8 @@ ENV/
 
 # data
 *.parquet
+!data/_gpro/*.parquet
+!data/_pre_train/*.jsonl
 
 
 # local logs
