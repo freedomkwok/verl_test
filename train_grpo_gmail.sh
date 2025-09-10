@@ -5,8 +5,8 @@ WAND_PROJECT=${WAND_PROJECT:-'OpenRL-GRPO-GMAIL'}
 export AGENTGYM_ENV_NAME=${AGENTGYM_ENV_NAME:-'gmail'}
 
 n_gpu=${1:-1}
-export DATA_DIR=${2:-'data'}
-export BASE_MODEL="/$DATA_DIR/models/QWEN1_5B_0815_A"
+export MODEL_NUM=${2:-''}
+export BASE_MODEL="/data/models/QWEN1_5B_0815_A$MODEL_NUM"
 
 # Set CUDA_VISIBLE_DEVICES based on n_gpu
 if [ "$n_gpu" -eq 1 ]; then
