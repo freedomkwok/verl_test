@@ -54,6 +54,8 @@ TORCH_DISABLE_COMPILE=1 TORCH_DISABLE_INDUCTOR=1 \
 OMP_NUM_THREADS=5 MKL_NUM_THREADS=5 NUMEXPR_NUM_THREADS=5 \
 SGLANG_DISABLE_TP_MEMORY_INBALANCE_CHECK=true \
 SGLANG_ATTENTION_BACKEND=XFORMERS \
+CUDA_LAUNCH_BLOCKING=1 \
+PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128 \
 DEBUGGY_LOCAL=True WANDB_DISABLE_ARTIFACTS=True WANDB_DISABLE_CODE=True WANDB_CONSOLE=off WANDB_START_METHOD='thread' \
 python3 -m verl.trainer.main_ppo \
     --config-path="$CONFIG_PATH" \
@@ -89,9 +91,9 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.name=sglang \
     actor_rollout_ref.rollout.mode=sync \
     actor_rollout_ref.rollout.temperature=0.8 \
-    actor_rollout_ref.rollout.gpu_memory_utilization=0.8 \
+    actor_rollout_ref.rollout.gpu_memory_utilization=0.6 \
     actor_rollout_ref.rollout.enable_chunked_prefill=False \
-    actor_rollout_ref.rollout.enforce_eager=False \
+    actor_rollout_ref.rollout.enforce_eager=True \
     actor_rollout_ref.rollout.free_cache_engine=False \
     actor_rollout_ref.rollout.val_kwargs.temperature=0.7 \
     actor_rollout_ref.rollout.val_kwargs.do_sample=True \
