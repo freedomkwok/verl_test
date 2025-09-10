@@ -183,6 +183,7 @@ bazel build //:ray_pkg
 SKIP_BAZEL_BUILD=1 RAY_INSTALL_CPP=0 pip install -e .
 
 git remote add origin https://$GH_TOKEN@github.com/freedomkwok/OpenRL.git
+git remote set-url origin https://$GH_TOKEN@github.com/freedomkwok/OpenRL.git
 
 git remote add origin https://github.com/freedomkwok/verl_test.git
 git remote set-url origin https://github.com/freedomkwok/verl_test.git

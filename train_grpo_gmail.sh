@@ -2,7 +2,7 @@ set -x
 export VLLM_ATTENTION_BACKEND=XFORMERS
 
 WAND_PROJECT=${WAND_PROJECT:-'OpenRL-GRPO-GMAIL'}
-export BASE_MODEL=${BASE_MODEL:-'/data1/models/QWEN1_5B_0815_A'}
+export BASE_MODEL=${BASE_MODEL:-'/data/models/QWEN1_5B_0815_A'}
 export AGENTGYM_ENV_NAME=${AGENTGYM_ENV_NAME:-'gmail'}
 n_gpu=${1:-1}
 
