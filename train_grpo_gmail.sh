@@ -48,7 +48,7 @@ CONFIG_PATH="$PROJECT_DIR/examples/sglang_multiturn/config"
 
 NCCL_DEBUG=DEBUG NCCL_DEBUG_SUBSYS=ALL NCCL_P2P_DISABLE=0 TORCH_DISTRIBUTED_DEBUG=DETAIL PYTHONUNBUFFERED=1 DEBUGGY_LOCAL=True \
 WANDB_DISABLE_ARTIFACTS=True WANDB_DISABLE_CODE=True WANDB_CONSOLE=off WANDB_START_METHOD='thread' \
-torchrun --nproc_per_node=$n_gpu verl.trainer.main_ppo \
+torchrun --nproc_per_node=$n_gpu -m verl.trainer.main_ppo \
     --config-path="$CONFIG_PATH" \
     --config-name='gmail_multiturn_grpo' \
     algorithm.adv_estimator=grpo \
