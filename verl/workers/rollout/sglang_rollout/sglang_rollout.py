@@ -300,16 +300,16 @@ class SGLangRollout(BaseRollout):
             except AttributeError as e:
                 raise ValueError(f"Cannot get pad_token_id from processing_class {self.processing_class}") from e
         
-        # Only enable debugpy on rank 0 to avoid multiple debuggers
-        current_rank = getattr(self, '_rank', int(os.environ.get("RANK", "0")))
-        if os.environ.get("DEBUGPY_ACTIVE") != "1" and current_rank == 0:
-            os.environ["DEBUGPY_ACTIVE"] = "1"
-            import debugpy
+        # # Only enable debugpy on rank 0 to avoid multiple debuggers
+        # current_rank = getattr(self, '_rank', int(os.environ.get("RANK", "0")))
+        # if os.environ.get("DEBUGPY_ACTIVE") != "1" and current_rank == 0:
+        #     os.environ["DEBUGPY_ACTIVE"] = "1"
+        #     import debugpy
             
-            debugpy.listen(("0.0.0.0", 5678))
-            debugpy.wait_for_client()
-        elif current_rank != 0:
-            logger.info(f"Skipping debugpy on rank {current_rank} - only rank 0 will debug")
+        #     debugpy.listen(("0.0.0.0", 5678))
+        #     debugpy.wait_for_client()
+        # elif current_rank != 0:
+        #     logger.info(f"Skipping debugpy on rank {current_rank} - only rank 0 will debug")
 
     def _init_distributed_env(self, device_mesh_cpu, **kwargs):
         self._device_mesh_cpu = device_mesh_cpu
