@@ -268,16 +268,6 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
         role="actor",
         enable_activation_offload=False,
     ):
-        current_rank = getattr(self, '_rank', int(os.environ.get("RANK", "0")))
-        if os.environ.get("DEBUGPY_ACTIVE") != "1" and current_rank == 0:
-            os.environ["DEBUGPY_ACTIVE"] = "1"
-            import debugpy
-            
-            debugpy.listen(("0.0.0.0", 5678))
-            debugpy.wait_for_client()
-        elif current_rank != 0:
-            logger.info(f"Skipping debugpy on rank {current_rank} - only rank 0 will debug")
-        
         from torch import optim
         from torch.distributed.fsdp import CPUOffload, MixedPrecision
         from transformers import AutoConfig, AutoModel, AutoModelForCausalLM, AutoModelForVision2Seq
@@ -838,6 +828,16 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
         # Support all hardwares
         assert self._is_rollout
         prompts = prompts.to(get_device_id())
+
+        current_rank = getattr(self, '_rank', int(os.environ.get("RANK", "0")))
+        if os.environ.get("DEBUGPY_ACTIVE") != "1" and current_rank == 0:
+            os.environ["DEBUGPY_ACTIVE"] = "1"
+            import debugpy
+            
+            debugpy.listen(("0.0.0.0", 5678))
+            debugpy.wait_for_client()
+        elif current_rank != 0:
+            logger.info(f"Skipping debugpy on rank {current_rank} - only rank 0 will debug")
 
         meta_info = {
             "eos_token_id": self.model_config.generation_config.eos_token_id
