@@ -902,7 +902,7 @@ class SGLangRollout(BaseRollout):
                     )
 
                 output = await self._handle_engine_call(_req, request_sampling_params, image_data=image_data)
-                content = output["output_ids"] # output["text"]
+                content = output["text"] # output["text"]
                 finish_reason_type = FinishReasonTypeEnum.from_str(output["meta_info"]["finish_reason"]["type"])
                 current_turns += 1
                 if finish_reason_type == FinishReasonTypeEnum.LENGTH:
