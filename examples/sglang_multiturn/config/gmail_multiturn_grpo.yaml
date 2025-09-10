@@ -16,7 +16,7 @@ actor_rollout_ref:
   hybrid_engine: True
   actor:
     # Increase mini batch size to handle large GPU counts
-    ppo_mini_batch_size: 2
+    ppo_mini_batch_size: 8  # Must be >= number of GPUs
     ppo_micro_batch_size_per_gpu: 2
     use_dynamic_bsz: True
     ppo_max_token_len_per_gpu: 16384
