@@ -891,7 +891,7 @@ class SGLangRollout(BaseRollout):
                     )
 
                 output = await self._handle_engine_call(_req, request_sampling_params, image_data=image_data)
-                content = output["text"]
+                content = output["ourput_ids"] # output["text"]
                 finish_reason_type = FinishReasonTypeEnum.from_str(output["meta_info"]["finish_reason"]["type"])
                 current_turns += 1
                 if finish_reason_type == FinishReasonTypeEnum.LENGTH:
@@ -1016,7 +1016,7 @@ class SGLangRollout(BaseRollout):
     ) -> dict:
         generation_prompt_ids = _req.get_generation_prompt_ids(self.processing_class)
         output = await self._handle_engine_generate(generation_prompt_ids, sampling_params, image_data)
-        output["text"] = self.processing_class.decode(output["output_ids"], skip_special_tokens=True, clean_up_tokenization_spaces=True)
+        #output["text"] = self.processing_class.decode(output["output_ids"], skip_special_tokens=True, clean_up_tokenization_spaces=True)
         return output
 
     async def _handle_engine_generate(
@@ -1076,7 +1076,7 @@ class SGLangRollout(BaseRollout):
         tgt_device = prompts.batch["input_ids"].device
 
         if self._tp_rank == 0:
-            req_list = self._preprocess_prompt_to_async_rollout_requests(
+            req_list = self._preprocess_prompt_to_async_rollout_requests( # genereate kwargs
                 prompts,
             )
 

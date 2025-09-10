@@ -73,6 +73,10 @@ class GmailInteraction(BaseInteraction):
         if instance_id is None:
             instance_id = str(uuid4())
         
+        if kwargs.get("job_id") is not None:
+            self._job_id = kwargs.get("job_id")
+        if kwargs.get("ground_truth") is not None:
+            ground_truth = kwargs.get("ground_truth")
         try:
             # Create environment if not exists
             if self._env_id is None:
