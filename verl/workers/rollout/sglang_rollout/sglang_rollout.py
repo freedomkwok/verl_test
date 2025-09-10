@@ -299,6 +299,12 @@ class SGLangRollout(BaseRollout):
                 self.pad_token_id = self.processing_class.tokenizer.pad_token_id
             except AttributeError as e:
                 raise ValueError(f"Cannot get pad_token_id from processing_class {self.processing_class}") from e
+        
+        if os.environ.get("DEBUGPY_ACTIVE") != "1":
+            os.environ["DEBUGPY_ACTIVE"] = "1"
+            import debugpy
+            debugpy.listen(("0.0.0.0", 5678))
+            debugpy.wait_for_client()
 
     def _init_distributed_env(self, device_mesh_cpu, **kwargs):
         self._device_mesh_cpu = device_mesh_cpu
