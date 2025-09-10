@@ -99,7 +99,6 @@ python3 -m verl.trainer.main_ppo \
     algorithm.use_kl_in_reward=False \
     trainer.critic_warmup=0 \
     trainer.logger=['console','wandb'] \
-    trainer.val_before_train=False \
     trainer.project_name=$WAND_PROJECT \
     trainer.experiment_name=$EXPERIMENT_NAME \
     trainer.n_gpus_per_node=$n_gpu \
@@ -109,4 +108,5 @@ python3 -m verl.trainer.main_ppo \
     trainer.save_freq=-1 \
     trainer.test_freq=5 \
     trainer.total_epochs=150 \
+    trainer.val_before_train=False \
     2>&1 | tee "/output/logs/$(date +%Y%m%d_%H%M%S).log"
