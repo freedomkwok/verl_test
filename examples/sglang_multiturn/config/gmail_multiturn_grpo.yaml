@@ -14,12 +14,21 @@ data:
 
 actor_rollout_ref:
   hybrid_engine: True
+  actor:
+    # Increase mini batch size to handle large GPU counts
+    ppo_mini_batch_size: 2
+    ppo_micro_batch_size_per_gpu: 2
+    use_dynamic_bsz: True
+    ppo_max_token_len_per_gpu: 16384
+    n: 1  # Must match rollout.n
+
   rollout:
     name: sglang
     mode: async
     load_format: dummy_dtensor
     enforce_eager: False
     free_cache_engine: True
+    n: 1  # Number of samples per prompt
     
     # Model and distributed configs
     dtype: bfloat16
@@ -48,6 +57,5 @@ actor_rollout_ref:
     temperature: 0.8
     top_p: 0.9
     top_k: -1
-    n: 1
     do_sample: true
       
