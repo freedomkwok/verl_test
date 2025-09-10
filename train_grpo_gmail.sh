@@ -55,6 +55,7 @@ python3 -m verl.trainer.main_ppo \
     data.val_files=$TEST_FILE \
     data.train_batch_size=2 \
     data.val_batch_size=1 \
+    data.prompt_key='raw_prompt' \
     data.max_prompt_length=6000 \
     data.max_response_length=512 \
     data.filter_overlong_prompts=True \
