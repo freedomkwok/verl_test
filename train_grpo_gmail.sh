@@ -48,6 +48,8 @@ CONFIG_PATH="$PROJECT_DIR/examples/sglang_multiturn/config"
 # CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES torchrun --nproc_per_node=1 verl/trainer/main_ppo.py \
 
 #NCCL_DEBUG=INFO NCCL_DEBUG_SUBSYS=ALL NCCL_P2P_DISABLE=0 TORCH_DISTRIBUTED_DEBUG=DETAIL PYTHONUNBUFFERED=1 DEBUGGY_LOCAL=True CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES \
+# TORCH_COMPILE=0 TORCHINDUCTOR_MAX_AUTOTUNE=0 TORCHINDUCTOR_COMPILE_THREADS=1 \
+# TORCH_LOGS=-dynamo TORCHINDUCTOR_CACHE_DIR=/tmp/torch_inductor_cache \
 WANDB_DISABLE_ARTIFACTS=True WANDB_DISABLE_CODE=True WANDB_CONSOLE=off WANDB_START_METHOD='thread' \
 python3 -m verl.trainer.main_ppo \
     --config-path="$CONFIG_PATH" \
@@ -83,7 +85,7 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.name=sglang \
     actor_rollout_ref.rollout.mode=sync \
     actor_rollout_ref.rollout.temperature=0.8 \
-    actor_rollout_ref.rollout.gpu_memory_utilization=0.6 \
+    actor_rollout_ref.rollout.gpu_memory_utilization=0.8 \
     actor_rollout_ref.rollout.enable_chunked_prefill=False \
     actor_rollout_ref.rollout.enforce_eager=False \
     actor_rollout_ref.rollout.free_cache_engine=False \
