@@ -7,9 +7,9 @@ defaults:
   - _self_
 
 data:
-  max_prompt_length: 8000
-  max_response_length: 1000
-  train_batch_size: 2
+  max_prompt_length: 6000
+  max_response_length: 1024
+  train_batch_size: 4
   return_raw_chat: True
 
 actor_rollout_ref:
@@ -25,7 +25,7 @@ actor_rollout_ref:
   rollout:
     name: sglang
     mode: async
-    load_format: dummy_dtensor
+    load_format: dummy
     enforce_eager: True
     free_cache_engine: True
     n: 1  # Number of samples per prompt

@@ -54,8 +54,8 @@ TORCH_DISABLE_COMPILE=1 TORCH_DISABLE_INDUCTOR=1 \
 OMP_NUM_THREADS=5 MKL_NUM_THREADS=5 NUMEXPR_NUM_THREADS=5 \
 SGLANG_DISABLE_TP_MEMORY_INBALANCE_CHECK=true \
 SGLANG_ATTENTION_BACKEND=XFORMERS \
-CUDA_LAUNCH_BLOCKING=1 \
-PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128 \
+TORCH_DISTRIBUTED_USE_SPAWN=1 \
+GLANG_DISABLE_PIDFD=1 \
 DEBUGGY_LOCAL=True WANDB_DISABLE_ARTIFACTS=True WANDB_DISABLE_CODE=True WANDB_CONSOLE=off WANDB_START_METHOD='thread' \
 python3 -m verl.trainer.main_ppo \
     --config-path="$CONFIG_PATH" \
@@ -66,7 +66,7 @@ python3 -m verl.trainer.main_ppo \
     data.train_batch_size=4 \
     data.val_batch_size=1 \
     data.prompt_key='raw_prompt' \
-    data.max_prompt_length=8000 \
+    data.max_prompt_length=6000 \
     data.max_response_length=1024 \
     data.filter_overlong_prompts=True \
     data.filter_overlong_prompts_workers=1 \
