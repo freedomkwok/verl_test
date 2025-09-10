@@ -46,6 +46,7 @@ class GmailInteraction(BaseInteraction):
         self.env_server_base = config.get("env_server_base", "http://127.0.0.1")
         self.env_server_port = config.get("env_server_port", 8000)
         self.timeout = config.get("timeout", 600)
+        self.config = config
         self.max_steps = config.get("max_steps", 10)
         # Environment state
         self._env_id = None
@@ -130,10 +131,6 @@ class GmailInteraction(BaseInteraction):
         # Handle environment stepping if we have an environment
         if instance_id in self._instance_dict:
             instance_data = self._instance_dict[instance_id]
-            
-            if instance_data["step"] == 0:
-                self._job_id = job_id
-                self._post("reset", {"env_idx": self._env_id, "job_id": self._job_id})
 
             # Extract action from the latest message
             action = latest_message.get("content", "") if latest_message.get("role") == "assistant" else ""

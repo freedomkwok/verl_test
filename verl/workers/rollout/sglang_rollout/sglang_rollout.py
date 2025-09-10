@@ -1013,7 +1013,7 @@ class SGLangRollout(BaseRollout):
             debug_sampling_params["max_new_tokens"] = 0
             output = await self._engine.async_generate(
                 prompt=None,
-                input_ids=_req.input_ids,
+                input_ids=_req.input_ids.tolist(),
                 sampling_params=debug_sampling_params,
                 return_logprob=True,
                 logprob_start_len=0,
