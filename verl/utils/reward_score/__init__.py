@@ -103,6 +103,11 @@ def default_compute_score(
         res = search_r1_like_qa_em.compute_score(solution_str, ground_truth)
 
     else:
+        elif data_source in ["gmail"]:
+        from . import gmail
+        res = gmail.compute_score(solution_str,
+                                    ground_truth,
+                                    extra_info)
         raise NotImplementedError(f"Reward function is not implemented for {data_source=}")
 
     if isinstance(res, dict):
