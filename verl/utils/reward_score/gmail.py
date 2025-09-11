@@ -20,14 +20,14 @@ def compute_score(
         Reward score (1.0 for correct, -1.0 for incorrect)
     """
     # Limit solution length for efficiency
-    original_has_finish = extra_info.get("original_has_finish", False)
+    original_has_finish = extra_info.get("original_success", False)
     success = extra_info.get("success", False)
     extra_info
     reward = 0.0
     if original_has_finish and success:
         reward += 0.5
     elif original_has_finish and not success:
-        reward += -0.8
+        reward -= 0.6
     elif not original_has_finish and success:
         reward += 1.0
 
