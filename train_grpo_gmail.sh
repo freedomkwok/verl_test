@@ -47,6 +47,7 @@ PROJECT_DIR="$(pwd)"
 CONFIG_PATH="$PROJECT_DIR/examples/sglang_multiturn/config"
 # CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES torchrun --nproc_per_node=1 verl/trainer/main_ppo.py \
 
+# python3 -m verl.trainer.main_ppo \
 #OMP_NUM_THREADS=5 MKL_NUM_THREADS=5 NUMEXPR_NUM_THREADS=5 \
 #NCCL_DEBUG=INFO NCCL_DEBUG_SUBSYS=ALL NCCL_P2P_DISABLE=0 TORCH_DISTRIBUTED_DEBUG=DETAIL PYTHONUNBUFFERED=1 CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES \
 TORCH_COMPILE=0 TORCHINDUCTOR_MAX_AUTOTUNE=0 TORCHINDUCTOR_COMPILE_THREADS=4 TORCHINDUCTOR_NUM_WORKERS=1 \
@@ -57,17 +58,17 @@ SGLANG_ATTENTION_BACKEND=XFORMERS \
 GLANG_DISABLE_PIDFD=1 \
 TORCH_DISTRIBUTED_USE_SPAWN=1 \
 DEBUGGY_LOCAL=True WANDB_DISABLE_ARTIFACTS=True WANDB_DISABLE_CODE=True WANDB_CONSOLE=off WANDB_START_METHOD='thread' \
-python3 -m verl.trainer.main_ppo \
+torchrun --nproc_per_node=1 verl/trainer/main_ppo.py \
     --config-path="$CONFIG_PATH" \
     --config-name='gmail_multiturn_grpo' \
     algorithm.adv_estimator=grpo \
     data.train_files=$TRAIN_FILE \
     data.val_files=$TEST_FILE \
-    data.train_batch_size=4 \
+    data.train_batch_size=2 \
     data.val_batch_size=1 \
     data.prompt_key='raw_prompt' \
-    data.max_prompt_length=6000 \
-    data.max_response_length=1024 \
+    data.max_prompt_length=5000 \
+    data.max_response_length=200 \
     data.filter_overlong_prompts=True \
     data.filter_overlong_prompts_workers=1 \
     data.truncation='error' \
