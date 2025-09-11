@@ -29,8 +29,8 @@ logger = logging.getLogger(__file__)
 logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "WARN"))
 
 BASE_CHAT_HISTORY = [
-    {"role": "system", "content": "You are a helpful assistant."},
-    {"role": "user", "content": "I am a user."},
+    # {"role": "system", "content": "You are a helpful assistant."},
+    # {"role": "user", "content": "I am a user."},
 ]
 
 

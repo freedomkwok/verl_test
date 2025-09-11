@@ -53,7 +53,7 @@ CONFIG_PATH="$PROJECT_DIR/examples/sglang_multiturn/config"
 
 # python3 -m verl.trainer.main_ppo torchrun --nproc_per_node=1 verl/trainer/main_ppo.py \
 #OMP_NUM_THREADS=5 MKL_NUM_THREADS=5 NUMEXPR_NUM_THREADS=5 \
-NCCL_DEBUG=DEBUG NCCL_DEBUG_SUBSYS=ALL NCCL_P2P_DISABLE=$NCCL_P2P_DISABLE TORCH_DISTRIBUTED_DEBUG=DETAIL PYTHONUNBUFFERED=1 CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES \
+# NCCL_DEBUG=DEBUG NCCL_DEBUG_SUBSYS=ALL NCCL_P2P_DISABLE=$NCCL_P2P_DISABLE TORCH_DISTRIBUTED_DEBUG=DETAIL PYTHONUNBUFFERED=1 CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES \
 TORCH_COMPILE=0 TORCHINDUCTOR_MAX_AUTOTUNE=0 TORCHINDUCTOR_COMPILE_THREADS=4 TORCHINDUCTOR_NUM_WORKERS=1 \
 TORCH_LOGS=-dynamo TORCHINDUCTOR_CACHE_DIR=/tmp/torch_inductor_cache \
 TORCH_DISABLE_COMPILE=1 TORCH_DISABLE_INDUCTOR=1 \
@@ -68,11 +68,11 @@ python3 -m verl.trainer.main_ppo \
     algorithm.adv_estimator=grpo \
     data.train_files=$TRAIN_FILE \
     data.val_files=$TEST_FILE \
-    data.train_batch_size=2 \
+    data.train_batch_size=1 \
     data.val_batch_size=1 \
     data.prompt_key='raw_prompt' \
-    data.max_prompt_length=6000 \
-    data.max_response_length=1000 \
+    data.max_prompt_length=5000 \
+    data.max_response_length=500 \
     data.filter_overlong_prompts=True \
     data.filter_overlong_prompts_workers=1 \
     data.truncation='error' \
@@ -95,7 +95,7 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.name=sglang \
     actor_rollout_ref.rollout.mode=sync \
     actor_rollout_ref.rollout.temperature=0.8 \
-    actor_rollout_ref.rollout.gpu_memory_utilization=0.5 \
+    actor_rollout_ref.rollout.gpu_memory_utilization=0.3 \
     actor_rollout_ref.rollout.enable_chunked_prefill=False \
     actor_rollout_ref.rollout.enforce_eager=True \
     actor_rollout_ref.rollout.free_cache_engine=False \
@@ -127,6 +127,6 @@ python3 -m verl.trainer.main_ppo \
     trainer.nnodes=1 \
     trainer.save_freq=-1 \
     trainer.test_freq=5 \
-    trainer.total_epochs=150 \
+    trainer.total_epochs=100 \
     trainer.val_before_train=False \
     2>&1 | tee "/output/logs/$(date +%Y%m%d_%H%M%S).log"

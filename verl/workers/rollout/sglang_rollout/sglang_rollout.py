@@ -946,7 +946,7 @@ class SGLangRollout(BaseRollout):
                             finish_reason_type = FinishReasonTypeEnum.STOP
                             _req.state = AsyncRolloutRequestStateEnum.COMPLETED
                             break
-                    else:
+                    else: # continue add messages
                         _req.add_assistant_message(
                             self.processing_class,
                             content,
