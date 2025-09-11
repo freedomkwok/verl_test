@@ -42,14 +42,18 @@ echo "EXPERIMENT_NAME: $EXPERIMENT_NAME"
 TRAIN_FILE="/workspace/OpenRL2/data/_grpo/train1.parquet"
 TEST_FILE="/workspace/OpenRL2/data/_grpo/val1.parquet"
 
-
+if [ "$n_gpu" -eq 1 ]; then
+    export NCCL_P2P_DISABLE=1
+else
+    export NCCL_P2P_DISABLE=0
+fi
 PROJECT_DIR="$(pwd)"
 CONFIG_PATH="$PROJECT_DIR/examples/sglang_multiturn/config"
 # CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES torchrun --nproc_per_node=1 verl/trainer/main_ppo.py \
 
 # python3 -m verl.trainer.main_ppo torchrun --nproc_per_node=1 verl/trainer/main_ppo.py \
-#OMP_NUM_THREADS=5 MKL_NUM_THREADS=5 NUMEXPR_NUM_THREADS=5 \ PYTHONUNBUFFERED=1
-NCCL_DEBUG=DEBUG NCCL_DEBUG_SUBSYS=ALL NCCL_P2P_DISABLE=1 TORCH_DISTRIBUTED_DEBUG=DETAIL \
+#OMP_NUM_THREADS=5 MKL_NUM_THREADS=5 NUMEXPR_NUM_THREADS=5 \
+NCCL_DEBUG=DEBUG NCCL_DEBUG_SUBSYS=ALL NCCL_P2P_DISABLE=$NCCL_P2P_DISABLE TORCH_DISTRIBUTED_DEBUG=DETAIL PYTHONUNBUFFERED=1 CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES \
 TORCH_COMPILE=0 TORCHINDUCTOR_MAX_AUTOTUNE=0 TORCHINDUCTOR_COMPILE_THREADS=4 TORCHINDUCTOR_NUM_WORKERS=1 \
 TORCH_LOGS=-dynamo TORCHINDUCTOR_CACHE_DIR=/tmp/torch_inductor_cache \
 TORCH_DISABLE_COMPILE=1 TORCH_DISABLE_INDUCTOR=1 \
@@ -91,7 +95,7 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.name=sglang \
     actor_rollout_ref.rollout.mode=sync \
     actor_rollout_ref.rollout.temperature=0.8 \
-    actor_rollout_ref.rollout.gpu_memory_utilization=0.5 \
+    actor_rollout_ref.rollout.gpu_memory_utilization=0.4 \
     actor_rollout_ref.rollout.enable_chunked_prefill=False \
     actor_rollout_ref.rollout.enforce_eager=True \
     actor_rollout_ref.rollout.free_cache_engine=False \
