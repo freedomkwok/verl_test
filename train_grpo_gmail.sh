@@ -108,6 +108,7 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.actor.strategy=fsdp2 \
     critic.strategy=fsdp2 \
     reward_model.strategy=fsdp2 \
+    reward_model.reward_manager=gmail \
     critic.optim.lr=1e-5 \
     critic.model.use_remove_padding=True \
     critic.model.path=$BASE_MODEL \

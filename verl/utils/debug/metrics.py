@@ -14,7 +14,7 @@
 import logging
 
 import torch
-
+import numpy as np
 from verl.protocol import DataProto
 
 logger = logging.getLogger(__file__)
@@ -106,4 +106,29 @@ def calculate_debug_metrics(data: DataProto) -> dict:
         "training/rollout_probs_diff_mean": torch.mean(rollout_probs_diff).detach().item(),
         "training/rollout_probs_diff_std": torch.std(rollout_probs_diff).detach().item(),
         "training/rollout_actor_probs_pearson_corr": pearson_corrcoef,
+    }
+
+
+def calculate_reward_metrics(batch: DataProto) -> dict:
+    """
+    calculate reward metrics
+    """
+    reward_scores = batch.non_tensor_batch["reward_scores"]
+        # Collect last rewards
+    last_rewards = [scores["user_turn_rewards"][-1] 
+                    for scores in reward_scores if scores["user_turn_rewards"]]
+
+    # Collect all rewards
+    all_rewards = [r for scores in reward_scores 
+                     for r in scores["user_turn_rewards"]]
+
+    # Compute metrics
+    avg_last = float(np.mean(last_rewards)) if last_rewards else 0.0
+    avg_all = float(np.mean(all_rewards)) if all_rewards else 0.0
+    std_all = float(np.std(all_rewards)) if all_rewards else 0.0
+
+    return {
+        "training/avg_last_reward": avg_last,
+        "training/avg_all_rewards": avg_all,
+        "training/std_all_rewards": std_all
     }
