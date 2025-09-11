@@ -484,7 +484,7 @@ class DataParallelPPOActor(BasePPOActor):
 
                     micro_batch_metrics.update(
                         {
-                            "actor/pg_loss": pg_loss.detach().item() * loss_scale_factor,
+                            "actor/[pg_loss]": pg_loss.detach().item() * loss_scale_factor,
                             "actor/pg_clipfrac": pg_clipfrac.detach().item(),
                             "actor/ppo_kl": ppo_kl.detach().item(),
                             "actor/pg_clipfrac_lower": pg_clipfrac_lower.detach().item(),
