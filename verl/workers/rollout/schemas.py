@@ -227,7 +227,7 @@ class AsyncRolloutRequest(BaseModel):
         add_generation_prompt: bool = False,
         tokenize: bool = False,
         return_dict: bool = False,
-    ):
+    ): ##init chat template
         raw_prompt = processing_class.apply_chat_template(
             messages, tools=tools, add_generation_prompt=add_generation_prompt, tokenize=False
         )
