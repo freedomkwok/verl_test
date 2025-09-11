@@ -194,7 +194,7 @@ class vLLMRollout(BaseRollout):
             disable_log_stats=config.disable_log_stats,
             max_num_batched_tokens=max_num_batched_tokens,
             enable_chunked_prefill=config.enable_chunked_prefill,
-            enable_prefix_caching=True,
+            enable_prefix_caching=config.enable_prefix_caching,
             trust_remote_code=trust_remote_code,
             seed=config.get("seed", 0),
             **compilation_config,
@@ -403,6 +403,9 @@ class vLLMRollout(BaseRollout):
         Args:
             tags: weights or kv_cache.
         """
+        if not self.config.free_cache_engine:
+            return
+
         if "tags" in inspect.signature(self.inference_engine.wake_up).parameters:
             self.inference_engine.wake_up(tags=tags)
         else:
@@ -411,6 +414,10 @@ class vLLMRollout(BaseRollout):
     async def release(self):
         """Release weights and kv cache in GPU memory."""
         self.inference_engine.reset_prefix_cache()
+
+        if not self.config.free_cache_engine:
+            return
+
         self.inference_engine.sleep(level=VLLM_SLEEP_LEVEL)
 
     async def update_weights(self, weights: Generator[tuple[str, torch.Tensor], None, None], **kwargs):
@@ -540,11 +547,13 @@ class vLLMAsyncRollout(BaseRollout):
         Args:
             tags: weights or kv_cache.
         """
-        self.inference_engine.wake_up(tags=tags)
+        if self.config.free_cache_engine:
+            self.inference_engine.wake_up(tags=tags)
 
     async def release(self):
         """Release weights and kv cache in GPU memory."""
-        self.inference_engine.sleep(level=VLLM_SLEEP_LEVEL)
+        if self.config.free_cache_engine:
+            self.inference_engine.sleep(level=VLLM_SLEEP_LEVEL)
 
     async def update_weights(self, weights: Generator[tuple[str, torch.Tensor], None, None], **kwargs):
         """Update the weights of the rollout model.
