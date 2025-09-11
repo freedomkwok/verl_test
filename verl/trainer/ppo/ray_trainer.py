@@ -980,6 +980,16 @@ class RayPPOTrainer:
 
                 is_last_step = self.global_steps >= self.total_training_steps
 
+                current_rank = getattr(self, '_rank', int(os.environ.get("RANK", "0")))
+                if os.environ.get("DEBUGPY_ACTIVE") != "1" and current_rank == 0:
+                    os.environ["DEBUGPY_ACTIVE"] = "1"
+                    import debugpy
+                    
+                    debugpy.listen(("0.0.0.0", 5678))
+                    debugpy.wait_for_client()
+                elif current_rank != 0:
+                    logger.info(f"Skipping debugpy on rank {current_rank} - only rank 0 will debug")
+
                 with marked_timer("step", timing_raw):
                     # generate a batch
                     with marked_timer("gen", timing_raw, color="red"):
