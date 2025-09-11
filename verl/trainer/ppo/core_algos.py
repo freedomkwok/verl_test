@@ -878,18 +878,18 @@ def compute_policy_loss_vanilla(
     pg_losses2_clipped = -advantages * torch.clamp(
         exp_neg_approx_kl, 1 - cliprange_low, 1 + cliprange_high
     )  # - clip(exp_neg_approx_kl, 1-cliprange, 1+cliprange) * A
-    clip_pg_losses1 = torch.maximum(
+    clip_pg_losses_max = torch.maximum(
         pg_losses1, pg_losses2_clipped
     )  # max(-exp_neg_approx_kl * A, -clip(exp_neg_approx_kl, 1-cliprange, 1+cliprange) * A)
     pg_clipfrac = verl_F.masked_mean(torch.gt(pg_losses2_clipped, pg_losses1).float(), response_mask)
 
     pg_losses3 = -advantages * clip_ratio_c
-    clip_pg_losses2 = torch.min(pg_losses3, clip_pg_losses1)
+    clip_pg_losses_min = torch.min(pg_losses3, clip_pg_losses_max)
     pg_clipfrac_lower = verl_F.masked_mean(
-        torch.gt(clip_pg_losses1, pg_losses3) * (advantages < 0).float(), response_mask
+        torch.gt(clip_pg_losses_max, pg_losses3) * (advantages < 0).float(), response_mask
     )
 
-    pg_losses = torch.where(advantages < 0, clip_pg_losses2, clip_pg_losses1)
+    pg_losses = torch.where(advantages < 0, clip_pg_losses_min, clip_pg_losses_max)
 
     if config.tis_imp_ratio_cap > 0 and rollout_log_probs is not None:
         # Apply truncated importance sampling -> https://fengyao.notion.site/off-policy-rl
