@@ -81,7 +81,7 @@ class GmailRewardManager(AbstractRewardManager):
             ground_truth = data_item.non_tensor_batch["reward_model"]["ground_truth"]
             data_source = data_item.non_tensor_batch[self.reward_fn_key]
             extra_info = data_item.non_tensor_batch.get("extra_info", {})
-            user_turn_rewards = extra_info["reward_scores"]["user_turn_rewards"])
+            user_turn_rewards = extra_info["reward_scores"]["user_turn_rewards"]
             num_turns = len(user_turn_rewards)
             has_success = user_turn_rewards[-1] >= 0
             reward = 0.0
@@ -99,7 +99,7 @@ class GmailRewardManager(AbstractRewardManager):
 
             similarity_scores = extra_info.get("similarity_scores", 0.8)
             reward += (similarity_scores - 0.8)
-            
+
             score = {
                 "score": reward,
                 "acc": 0,
