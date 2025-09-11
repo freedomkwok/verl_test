@@ -7,3 +7,4 @@ interaction:
       timeout: 600
       env_idx: 0
       job_id: 1
+      max_steps: 15

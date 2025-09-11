@@ -1019,7 +1019,7 @@ class SGLangRollout(BaseRollout):
                 logprob_start_len=0,
             )
             # len(input_token_logprobs) = len(input_tokens)-1，because logprob of 1st token is None
-            _req.output_token_ids, _req.rollout_log_probs = _extract_logprob_from_output(output)
+            _req.output_token_ids, _req.rollout_log_probs = _extract_logprob_from_output(output[0])
         return _req
 
     async def _handle_engine_call(

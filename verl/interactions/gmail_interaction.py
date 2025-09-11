@@ -46,7 +46,7 @@ class GmailInteraction(BaseInteraction):
         self.env_server_base = config.get("env_server_base", "http://127.0.0.1")
         self.env_server_port = config.get("env_server_port", 8000)
         self.timeout = config.get("timeout", 600)
-        self.config = config
+
         self.max_steps = config.get("max_steps", 10)
         # Environment state
         self._env_id = None
