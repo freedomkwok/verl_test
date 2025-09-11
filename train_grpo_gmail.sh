@@ -67,8 +67,8 @@ python3 -m verl.trainer.main_ppo \
     data.train_batch_size=2 \
     data.val_batch_size=1 \
     data.prompt_key='raw_prompt' \
-    data.max_prompt_length=5000 \
-    data.max_response_length=200 \
+    data.max_prompt_length=6000 \
+    data.max_response_length=1000 \
     data.filter_overlong_prompts=True \
     data.filter_overlong_prompts_workers=1 \
     data.truncation='error' \
@@ -91,11 +91,11 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.name=sglang \
     actor_rollout_ref.rollout.mode=sync \
     actor_rollout_ref.rollout.temperature=0.8 \
-    actor_rollout_ref.rollout.gpu_memory_utilization=0.5 \
+    actor_rollout_ref.rollout.gpu_memory_utilization=0.4 \
     actor_rollout_ref.rollout.enable_chunked_prefill=False \
     actor_rollout_ref.rollout.enforce_eager=True \
     actor_rollout_ref.rollout.free_cache_engine=False \
-    actor_rollout_ref.rollout.val_kwargs.temperature=0.5 \
+    actor_rollout_ref.rollout.val_kwargs.temperature=0.8 \
     actor_rollout_ref.rollout.val_kwargs.do_sample=True \
     actor_rollout_ref.rollout.n=1 \
     actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu=1 \
