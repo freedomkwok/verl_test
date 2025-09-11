@@ -204,6 +204,7 @@ class GmailInteraction(BaseInteraction):
         return gmail.compute_score(
             self._instance_dict[instance_id]["response"],
             self._instance_dict[instance_id]["ground_truth"],
+            self._instance_dict[instance_id]["extra_info"],
             method="flexible",
             format_score=0.0,
             score=1.0,
