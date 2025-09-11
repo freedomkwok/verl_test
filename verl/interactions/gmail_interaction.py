@@ -146,12 +146,13 @@ class GmailInteraction(BaseInteraction):
                     instance_data["reward"] += reward
                     done = step_result.get("done", False)
                     
+                    response = instance_data["observation"]
                     # Check if episode is done
                     if done:
-                        response = f"Episode completed! Total reward: {instance_data['reward']}"
+                        # response = f"Episode completed! Total reward: {instance_data['reward']}"
                         should_terminate_sequence = True
                     else:
-                        response = f"Step {instance_data['step']}: Action executed. Reward: {reward}. Observation: {instance_data['observation']}"
+                        # response = f"Step {instance_data['step']}: Action executed. Reward: {reward}. Observation: {instance_data['observation']}"
                         should_terminate_sequence = False
                     
                     return should_terminate_sequence, response, instance_data["reward"], {}
