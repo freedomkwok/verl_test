@@ -22,7 +22,7 @@ def compute_score(
     # Limit solution length for efficiency
     original_has_finish = extra_info.get("original_has_finish", False)
     success = extra_info.get("success", False)
-    
+    extra_info
     reward = 0.0
     if original_has_finish and success:
         reward += 0.5

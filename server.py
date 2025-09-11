@@ -196,7 +196,7 @@ mkdir -p /workspace/OpenRL2 && mkdir -p /data/verl_checkpoints && mkdir -p /data
 mkdir -p /output/logs/ && cd /workspace/OpenRL2 && git init && git remote add origin https://$GH_TOKEN@github.com/freedomkwok/OpenRL.git && git fetch --all  && git checkout -b main_09_01 origin/main_09_01 && git pull && git submodule update --init --recursive \
 && cd /workspace/OpenRL2 && conda create -n openrl python=3.10 -y && conda activate openrl && cd /workspace/OpenRL2  && pip install -e . && pip uninstall verl -y && cd /workspace/OpenRL2/verl && pip install -e '.[sglang,gpu]' && pip install flash-attn --no-build-isolation
 
-mkdir -p /data/models && mkdir -p /workspace/OpenRL2 && cd /workspace/OpenRL2 && mkdir -p /output/logs/ \
+mkdir -p /data/models && mkdir -p /workspace/OpenRL2 && cd /workspace/OpenRL2 && mkdir -p /output/logs/ && mkdir -p /data/verl_checkpoints && \
 git init && git remote add origin https://github.com/freedomkwok/verl_test.git && git fetch && git checkout -b main origin/main && git pull && \ 
 conda create -n openrl2 python=3.10 -y && conda activate openrl2 && pip install -e '.[sglang]' && pip install flash-attn --no-build-isolation
 
@@ -210,7 +210,7 @@ mkdir -p /workspace/OpenRL && cd /workspace/OpenRL && git init && git remote set
 conda create -n agent_server python=3.11 -y && conda activate agent_server && cd /workspace/OpenRL/openmanus_rl/agentgym/agentenv-gmail_calendar && pip install -e . && agentenv_gmail_calendar
 
 
-mkdir -p /workspace/OpenRL && cd /workspace/OpenRL && git init && git remote set-url origin https://$GH_TOKEN@github.com/freedomkwok/OpenRL.git && git fetch --all  && git checkout -b main origin/main && git pull \
+mkdir -p /workspace/OpenRL && cd /workspace/OpenRL && git init && git remote add origin https://$GH_TOKEN@github.com/freedomkwok/OpenRL.git && git fetch --all  && git checkout -b main origin/main && git pull \
 conda create -n agent_server python=3.11 -y && conda activate agent_server && cd /workspace/OpenRL/openmanus_rl/agentgym/agentenv-gmail_calendar && pip install -e . && agentenv_gmail_calendar
 
 
