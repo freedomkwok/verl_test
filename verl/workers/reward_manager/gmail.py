@@ -81,27 +81,29 @@ class GmailRewardManager(AbstractRewardManager):
             ground_truth = data_item.non_tensor_batch["reward_model"]["ground_truth"]
             data_source = data_item.non_tensor_batch[self.reward_fn_key]
             extra_info = data_item.non_tensor_batch.get("extra_info", {})
-            user_turn_rewards = extra_info["reward_scores"]["user_turn_rewards"]
-            num_turns = len(user_turn_rewards)
-            has_success = user_turn_rewards[-1] >= 0
-            reward = 0.0
-            
-            original_has_finish = extra_info.get("original_success", False)
-            success = extra_info.get("success", False)
-            
-            reward = 0.0
-            if original_has_finish and success:
-                reward += 0.5
-            elif original_has_finish and not success:
-                reward -= 0.6
-            elif not original_has_finish and success:
-                reward += 1.0
+            user_turn_rewards = data_item.non_tensor_batch["reward_scores"]["user_turn_rewards"]
+            total_turns = len(data_item.non_tensor_batch["messages"]["messages"])
 
-            similarity_scores = extra_info.get("similarity_scores", 0.8)
-            reward += (similarity_scores - 0.8)
+            turn_reward = 1 * 0.5 if total_turns < extra_info["conversation_count"] else 0
+
+            has_finish = user_turn_rewards[-1] >= 0
+            original_has_finish = extra_info.get("original_success", False)
+
+            teacher_ground_truth = extra_info.get("teacher_ground_truth", "")
+            
+            #teacher_ground_truth match valid_response_ids["last"]
+
+
+            success_reward = 0.0
+            if original_has_finish and has_finish:
+                success_reward += 0.5
+            elif original_has_finish and not has_finish:
+                success_reward -= 0.6
+            elif not original_has_finish and has_finish:
+                success_reward += 1.0
 
             score = {
-                "score": reward,
+                "score": success_reward + turn_reward,
                 "acc": 0,
                 "pred": 0,
             }

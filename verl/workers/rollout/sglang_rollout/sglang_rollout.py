@@ -1170,6 +1170,8 @@ class SGLangRollout(BaseRollout):
         reward_scores = []
         multi_modal_inputs = []
         request_ids = []
+        # Track conversation segment positions for reward allocation
+        segment_positions = []
         if self.config.calculate_log_probs:
             output_logprobs = []
             rollout_output_token_ids = []
@@ -1212,6 +1214,10 @@ class SGLangRollout(BaseRollout):
             reward_scores.append(req.reward_scores)
             multi_modal_inputs.append(req.multi_modal_inputs)
             request_ids.append(req.request_id)
+            
+            # Track conversation segment positions for reward allocation
+            segment_positions.append(req.segment_positions)
+            
             if self.config.calculate_log_probs:
                 # extract output log_probs
                 output_logprobs.append(req.rollout_log_probs[-len(req.response_ids) :])
@@ -1318,6 +1324,8 @@ class SGLangRollout(BaseRollout):
             "messages": np.array(messages),
             "reward_scores": np.array(reward_scores),
             "request_id": np.array(request_ids),
+            # Store segment position information for reward allocation
+            "segment_positions": np.array(segment_positions, dtype=object),
         }
 
         is_multimodal = isinstance(self.processing_class, ProcessorMixin) and (

@@ -119,6 +119,9 @@ class AsyncRolloutRequest(BaseModel):
     generation_prompt_ids: Optional[torch.Tensor] = None
     base_conv_wo_gen_prompt_end_pos: int
     base_conv_with_gen_prompt_end_pos: int
+    
+    # Segment tracking for reward allocation
+    segment_positions: list[dict[str, int]] = []
 
     @model_validator(mode="before")
     @classmethod
@@ -198,6 +201,15 @@ class AsyncRolloutRequest(BaseModel):
         values["prompt_ids"], values["prompt_attention_mask"] = values["input_ids"], values["attention_mask"]
         values["loss_mask"] = values["prompt_loss_mask"] = torch.zeros_like(values["input_ids"], dtype=torch.bool)
         values["generation_prompt_ids"] = values["input_ids"][..., tokens_without_prompt.shape[-1] :]
+        
+        # Initialize segment tracking with the prompt segment
+        prompt_length = values["input_ids"].shape[-1]
+        values["segment_positions"] = [{
+            "start": 0,
+            "end": prompt_length - 1,
+            "role": "prompt",
+            "is_agent": False
+        }]
         values["base_conv_wo_gen_prompt_end_pos"] = cls._handle_apply_chat_template(
             processing_class,
             BASE_CHAT_HISTORY,
@@ -300,10 +312,16 @@ class AsyncRolloutRequest(BaseModel):
         attention_mask: bool,
         loss_mask: bool,
         new_multi_modal_inputs: Optional[dict[str, torch.Tensor]] = None,
-    ) -> None:
+    ) -> tuple[int, int]:
         """
         Update the input_ids, attention_mask, position_ids, and loss_mask of the request in additive manner.
+        
+        Returns:
+            tuple: (start_position, end_position) of the newly added content
         """
+        # Record the start position before adding new content
+        start_position = self.input_ids.shape[-1] if self.input_ids is not None else 0
+        
         self.input_ids = torch.cat([self.input_ids, new_input_ids], dim=-1)
         attention_mask = torch.ones_like(new_input_ids) * int(attention_mask)
         self.attention_mask = torch.cat([self.attention_mask, attention_mask], dim=-1)
@@ -322,6 +340,9 @@ class AsyncRolloutRequest(BaseModel):
 
         self.position_ids = torch.cat([self.position_ids, new_position_ids], dim=-1)
 
+        # Calculate end position after adding new content
+        end_position = self.input_ids.shape[-1] - 1
+
         assert (
             self.input_ids.shape[-1]
             == self.attention_mask.shape[-1]
@@ -329,6 +350,8 @@ class AsyncRolloutRequest(BaseModel):
             == self.loss_mask.shape[-1]
         ), f"""Request {self.request_id} has different length of {self.input_ids.shape[-1]=}, 
             {self.attention_mask.shape[-1]=}, {self.position_ids.shape[-1]=}, {self.loss_mask.shape[-1]=}"""
+        
+        return start_position, end_position
 
     def _update_multi_modal_inputs(self, new_multi_modal_inputs: dict[str, torch.Tensor]) -> None:
         """
@@ -387,7 +410,18 @@ class AsyncRolloutRequest(BaseModel):
         content_ids = self._handle_apply_chat_template(
             processing_class, messages, multi_modal_data={}, tools=tools, add_generation_prompt=False, tokenize=True
         )[..., self.base_conv_wo_gen_prompt_end_pos :]
-        self._update_input_ids(processing_class, content_ids, attention_mask=True, loss_mask=False)
+        
+        # Capture the segment positions when adding the user message
+        start_pos, end_pos = self._update_input_ids(processing_class, content_ids, attention_mask=True, loss_mask=False)
+        
+        # Store the segment information
+        segment_info = {
+            "start": start_pos,
+            "end": end_pos,
+            "role": "user",
+            "is_agent": False
+        }
+        self.segment_positions.append(segment_info)
 
     def add_assistant_message(
         self,
@@ -405,7 +439,18 @@ class AsyncRolloutRequest(BaseModel):
         content_ids = self._handle_apply_chat_template(
             processing_class, messages, multi_modal_data={}, tools=tools, add_generation_prompt=False, tokenize=True
         )[..., self.base_conv_with_gen_prompt_end_pos :]
-        self._update_input_ids(processing_class, content_ids, attention_mask=True, loss_mask=True)
+        
+        # Capture the segment positions when adding the assistant message
+        start_pos, end_pos = self._update_input_ids(processing_class, content_ids, attention_mask=True, loss_mask=True)
+        
+        # Store the segment information
+        segment_info = {
+            "start": start_pos,
+            "end": end_pos,
+            "role": "assistant",
+            "is_agent": True
+        }
+        self.segment_positions.append(segment_info)
 
     def add_tool_response_messages(
         self,
