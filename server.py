@@ -208,7 +208,7 @@ conda create -n agent_server python=3.11 -y && conda activate agent_server && cd
 mkdir -p /workspace/OpenRL && cd /workspace/OpenRL && git init && git remote set-url origin https://$GH_TOKEN@github.com/freedomkwok/OpenRL.git && git fetch --all  && git switch main && git pull \
 conda create -n agent_server python=3.11 -y && conda activate agent_server && cd /workspace/OpenRL/openmanus_rl/agentgym/agentenv-gmail_calendar && pip install -e . && agentenv_gmail_calendar
 
-
+nvidia-smi topo -m
 
 CUDA_VISIBLE_DEVICES=0 NCCL_DEBUG=INFO NCCL_DEBUG_SUBSYS=ALL NCCL_P2P_DISABLE=0 TORCH_DISTRIBUTED_DEBUG=DETAIL PYTHONUNBUFFERED=1 DEBUGGY_LOCAL=True SGLANG_LOG_LEVEL=INFO \
 torchrun --nproc_per_node=1 tests/workers/rollout/test_openmanus_async_rollout.py
