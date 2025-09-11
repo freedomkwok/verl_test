@@ -83,16 +83,14 @@ class GmailRewardManager(AbstractRewardManager):
             extra_info = data_item.non_tensor_batch.get("extra_info", {})
             user_turn_rewards = data_item.non_tensor_batch["reward_scores"]["user_turn_rewards"]
             total_turns = len(data_item.non_tensor_batch["messages"]["messages"])
-
             turn_reward = 1 * 0.5 if total_turns < extra_info["conversation_count"] else 0
+            segment_positions = data_item.non_tensor_batch["segment_positions"]
 
             has_finish = user_turn_rewards[-1] >= 0
             original_has_finish = extra_info.get("original_success", False)
 
             teacher_ground_truth = extra_info.get("teacher_ground_truth", "")
-            
             #teacher_ground_truth match valid_response_ids["last"]
-
 
             success_reward = 0.0
             if original_has_finish and has_finish:
@@ -116,7 +114,10 @@ class GmailRewardManager(AbstractRewardManager):
             else:
                 reward = score
 
-            reward_tensor[i, valid_response_length - 1] = reward
+            # Apply segment-based reward allocation
+            self._apply_segment_reward_allocation(
+                reward_tensor, i, reward, segment_positions, valid_response_length
+            )
 
             if data_source not in already_print_data_sources:
                 already_print_data_sources[data_source] = 0
@@ -139,3 +140,114 @@ class GmailRewardManager(AbstractRewardManager):
             }
         else:
             return reward_tensor
+
+    def _apply_segment_reward_allocation(
+        self, 
+        reward_tensor: torch.Tensor, 
+        batch_idx: int, 
+        reward_to_distribute: float,
+        segment_positions: list[dict[str, int]], 
+        valid_response_length: int
+    ) -> None:
+        """
+        Apply segment-based reward allocation using the new segment_positions data structure.
+        
+        Args:
+            reward_tensor: The reward tensor to update
+            batch_idx: Index of the current batch item
+            reward_to_distribute: The total reward to distribute
+            segment_positions: List of segment dictionaries with start, end, role, is_agent
+            valid_response_length: Length of the valid response tokens
+        """
+        if not segment_positions:
+            # Fallback to last token allocation if no segments
+            reward_tensor[batch_idx, valid_response_length - 1] = reward_to_distribute
+            return
+        
+        # Get reward allocation strategy from config
+        reward_allocation = getattr(self.config, 'reward_allocation', 'last_token')
+        
+        # Find agent response segments
+        agent_segments = [seg for seg in segment_positions if seg.get("is_agent", False)]
+        
+        if not agent_segments:
+            # No agent segments found, fallback to last token
+            reward_tensor[batch_idx, valid_response_length - 1] = reward_to_distribute
+            return
+        
+        if reward_allocation == "last_token":
+            # Assign reward only to the last token of the last agent segment
+            last_segment = agent_segments[-1]
+            last_token_pos = min(last_segment["end"], valid_response_length - 1)
+            reward_tensor[batch_idx, last_token_pos] = reward_to_distribute
+            
+        elif reward_allocation == "uniform_positive":
+            # Distribute positive rewards evenly across all agent tokens
+            if reward_to_distribute > 0:
+                total_agent_tokens = sum(
+                    min(seg["end"], valid_response_length - 1) - seg["start"] + 1 
+                    for seg in agent_segments
+                    if seg["start"] < valid_response_length
+                )
+                if total_agent_tokens > 0:
+                    reward_per_token = reward_to_distribute / total_agent_tokens
+                    for seg in agent_segments:
+                        start = seg["start"]
+                        end = min(seg["end"], valid_response_length - 1)
+                        if start < valid_response_length:
+                            reward_tensor[batch_idx, start:end+1] = reward_per_token
+            else:
+                # Negative rewards go to last token
+                last_segment = agent_segments[-1]
+                last_token_pos = min(last_segment["end"], valid_response_length - 1)
+                reward_tensor[batch_idx, last_token_pos] = reward_to_distribute
+                
+        elif reward_allocation == "discounted":
+            # Distribute reward starting from the last agent segment, discounted backward
+            gamma = getattr(self.config, 'gamma', 0.9)  # Default discount factor
+            current_reward = reward_to_distribute
+            
+            # Iterate segments backward (from last to first)
+            for seg in reversed(agent_segments):
+                start = seg["start"]
+                end = min(seg["end"], valid_response_length - 1)
+                
+                if start < valid_response_length:
+                    segment_len = end - start + 1
+                    reward_for_segment = current_reward / segment_len
+                    reward_tensor[batch_idx, start:end+1] = reward_for_segment
+                    
+                    # Apply discount for the next (earlier) segment
+                    current_reward *= (gamma ** segment_len)
+                    
+        elif reward_allocation == "uniform_discounted":
+            # Combine uniform positive with temporal discounting
+            if reward_to_distribute > 0:
+                # Apply uniform positive to all agent segments
+                total_agent_tokens = sum(
+                    min(seg["end"], valid_response_length - 1) - seg["start"] + 1 
+                    for seg in agent_segments
+                    if seg["start"] < valid_response_length
+                )
+                if total_agent_tokens > 0:
+                    base_reward_per_token = reward_to_distribute / total_agent_tokens
+                    
+                    # Apply temporal discounting
+                    gamma = getattr(self.config, 'gamma', 0.9)
+                    for i, seg in enumerate(agent_segments):
+                        start = seg["start"]
+                        end = min(seg["end"], valid_response_length - 1)
+                        
+                        if start < valid_response_length:
+                            # Discount factor based on position (later segments get higher rewards)
+                            discount_factor = gamma ** (len(agent_segments) - 1 - i)
+                            discounted_reward = base_reward_per_token * discount_factor
+                            reward_tensor[batch_idx, start:end+1] = discounted_reward
+            else:
+                # Negative rewards go to last token
+                last_segment = agent_segments[-1]
+                last_token_pos = min(last_segment["end"], valid_response_length - 1)
+                reward_tensor[batch_idx, last_token_pos] = reward_to_distribute
+        else:
+            # Unknown strategy, fallback to last token
+            reward_tensor[batch_idx, valid_response_length - 1] = reward_to_distribute
