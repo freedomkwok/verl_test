@@ -134,7 +134,7 @@ class GmailInteraction(BaseInteraction):
             # Extract action from the latest message
             action = latest_message.get("content", "") if latest_message.get("role") == "assistant" else ""
             
-            if action and instance_data["step"] < 10:  # Max 10 steps
+            if action and instance_data["step"] < self.max_steps:  # Max 10 steps
                 try:
                     # Step the environment
                     step_result = self._post("step", {"action": action})
@@ -143,7 +143,7 @@ class GmailInteraction(BaseInteraction):
                     instance_data["observation"] = step_result.get("observation", "")
                     instance_data["step"] += 1
                     reward = float(step_result.get("reward", 0.0))
-                    instance_data["reward"] += reward
+                    instance_data["reward"] = reward # defaul correct is 0, erorr is -0.2, total return is 1
                     done = step_result.get("done", False)
                     
                     response = instance_data["observation"]
