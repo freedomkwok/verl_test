@@ -29,8 +29,8 @@ logger = logging.getLogger(__file__)
 logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "WARN"))
 
 BASE_CHAT_HISTORY = [
-    # {"role": "system", "content": "You are a helpful assistant."},
-    # {"role": "user", "content": "I am a user."},
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "I am a user."},
 ]
 
 
@@ -200,7 +200,7 @@ class AsyncRolloutRequest(BaseModel):
         values["generation_prompt_ids"] = values["input_ids"][..., tokens_without_prompt.shape[-1] :]
         values["base_conv_wo_gen_prompt_end_pos"] = cls._handle_apply_chat_template(
             processing_class,
-            BASE_CHAT_HISTORY,
+            messages, #BASE_CHAT_HISTORY,
             multi_modal_data=multi_modal_data,
             tools=tools,
             add_generation_prompt=False,
@@ -209,7 +209,7 @@ class AsyncRolloutRequest(BaseModel):
 
         values["base_conv_with_gen_prompt_end_pos"] = cls._handle_apply_chat_template(
             processing_class,
-            BASE_CHAT_HISTORY,
+            messages, #BASE_CHAT_HISTORY,
             multi_modal_data=multi_modal_data,
             tools=tools,
             add_generation_prompt=True,
@@ -379,7 +379,7 @@ class AsyncRolloutRequest(BaseModel):
         content: str,
     ) -> None:
         self.messages.append(Message(role="user", content=content))
-        messages = [*BASE_CHAT_HISTORY, self.messages[-1]]
+        messages = [self.messages[-1]] # [*BASE_CHAT_HISTORY, self.messages[-1]]
         tools = [tool.model_dump() for tool in self.tool_schemas] if self.tool_schemas else None
 
         # We don't need to pass multi_modal_data here because we don't have any multi-modal data from Engine
@@ -397,7 +397,7 @@ class AsyncRolloutRequest(BaseModel):
     ) -> None:
         self.messages.append(Message(role="assistant", content=content, tool_calls=tool_calls))
 
-        messages = [*BASE_CHAT_HISTORY, self.messages[-1]]
+        messages = [self.messages[-1]] # [*BASE_CHAT_HISTORY, self.messages[-1]]
         tools = [tool.model_dump() for tool in self.tool_schemas] if self.tool_schemas else None
 
         # We don't need to pass multi_modal_data here because we don't have any multi-modal data from Engine
@@ -430,7 +430,7 @@ class AsyncRolloutRequest(BaseModel):
                 content_list.append({"type": "text", "text": content.text})
             self.messages.append(Message(role="tool", content=content_list))
 
-        messages = [*BASE_CHAT_HISTORY, *self.messages[-len(contents) :]]
+        messages = [*self.messages[-len(contents) :]] # [*BASE_CHAT_HISTORY, self.messages[-1]] messages = [*BASE_CHAT_HISTORY, *self.messages[-len(contents) :]]
         tools = [tool.model_dump() for tool in self.tool_schemas] if self.tool_schemas else None
 
         for key in self.multi_modal_keys:
