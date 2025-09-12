@@ -63,8 +63,6 @@ SGLANG_DISABLE_PIDFD=1 \
 TORCH_DISTRIBUTED_USE_SPAWN=1 \
 DEBUGGY_LOCAL=True WANDB_DISABLE_ARTIFACTS=True WANDB_DISABLE_CODE=True WANDB_CONSOLE=off WANDB_START_METHOD='thread' \
 python3 -m verl.trainer.main_ppo \
-    --config-path="$CONFIG_PATH" \
-    --config-name='ppo_trainer' \
     algorithm.adv_estimator=grpo \
     data.train_files=$TRAIN_FILE \
     data.val_files=$TEST_FILE \
