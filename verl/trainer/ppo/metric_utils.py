@@ -200,7 +200,7 @@ def compute_data_metrics(batch: DataProto, use_critic: bool = True) -> dict[str,
         "response_length_non_aborted/clip_ratio": non_aborted_response_length_clip_ratio,
         # aborted ratio
         # Fraction of samples whose response length is zero
-        "response/aborted_ratio": aborted_ratio,
+        "response_length/aborted_ratio": aborted_ratio,
         # prompt length
         "prompt_length/mean": torch.mean(prompt_length).detach().item(),
         "prompt_length/max": torch.max(prompt_length).detach().item(),

@@ -283,6 +283,11 @@ class GmailRewardManager(AbstractRewardManager):
                 
                 if start < valid_response_length:
                     segment_len = end - start + 1
+                    # Safety check: skip empty segments
+                    if segment_len <= 0:
+                        if hasattr(self, 'num_examine') and self.num_examine > 0:
+                            print(f"[Debug] Skipping empty segment: start={start}, end={end}, segment_len={segment_len}")
+                        continue
                     reward_for_segment = current_reward / segment_len
                     reward_tensor[batch_idx, start:end+1] = reward_for_segment
                     
