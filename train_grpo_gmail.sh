@@ -72,7 +72,7 @@ python3 -m verl.trainer.main_ppo \
     data.val_batch_size=$n_gpu \
     data.prompt_key='raw_prompt' \
     data.max_prompt_length=9000 \
-    data.max_response_length=800 \
+    data.max_response_length=1500 \
     data.filter_overlong_prompts=True \
     data.filter_overlong_prompts_workers=1 \
     data.truncation='error' \

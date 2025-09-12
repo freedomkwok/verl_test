@@ -47,9 +47,9 @@ actor_rollout_ref:
     max_num_batched_tokens: 8192
 
     # Length configs (correct rollout fields)
-    prompt_length: 6000
-    response_length: 1000
-    max_model_len: 7000  # prompt_length + response_length
+    prompt_length: 8000
+    response_length: 2000
+    max_model_len: 10000  # prompt_length + response_length
     
     # Multi-turn configs
     multi_turn:

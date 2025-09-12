@@ -171,6 +171,7 @@ def apply_kl_penalty(data: DataProto, kl_ctrl: core_algos.AdaptiveKLController, 
     data.batch["token_level_rewards"] = token_level_rewards
 
     metrics = {"actor/reward_kl_penalty": current_kl, "actor/reward_kl_penalty_coeff": beta}
+    metrics = {"reward/token_avg": current_kl}
 
     return data, metrics
 
