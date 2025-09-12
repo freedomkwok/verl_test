@@ -174,7 +174,7 @@ class GmailInteraction(BaseInteraction):
         else:
             self._instance_dict[instance_id]["response"] = "#### " + (content or "")
 
-        reward = await self.calculate_score(instance_id)
+        reward = 0 # await self.calculate_score(instance_id)
         if reward == 1.0:
             response = "Your response is correct!"
             should_terminate_sequence = True
