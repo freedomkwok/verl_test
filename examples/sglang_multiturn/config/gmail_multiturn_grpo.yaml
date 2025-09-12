@@ -8,7 +8,7 @@ defaults:
 
 data:
   max_prompt_length: 2400
-  max_response_length: 9600
+  max_response_length: 8600
   train_batch_size: 2
   return_raw_chat: True
 
@@ -48,8 +48,8 @@ actor_rollout_ref:
 
     # Length configs (correct rollout fields)
     prompt_length: 2400
-    response_length: 9600
-    max_model_len: 12000  # prompt_length + response_length
+    response_length: 8600
+    max_model_len: 13000  # prompt_length + response_length
     
     # Multi-turn configs
     multi_turn:
