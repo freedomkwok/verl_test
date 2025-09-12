@@ -65,14 +65,14 @@ DEBUGGY_LOCAL=True WANDB_DISABLE_ARTIFACTS=True WANDB_DISABLE_CODE=True WANDB_CO
 python3 -m verl.trainer.main_ppo \
     --config-path="$CONFIG_PATH" \
     --config-name='gmail_multiturn_grpo' \
-    algorithm.adv_estimator=grpo \
+    algorithm.adv_estimator=grpo \config
     data.train_files=$TRAIN_FILE \
     data.val_files=$TEST_FILE \
     data.train_batch_size=$n_gpu \
     data.val_batch_size=$n_gpu \
     data.prompt_key='raw_prompt' \
     data.max_prompt_length=2400 \
-    data.max_response_length=7600 \
+    data.max_response_length=8600 \
     data.filter_overlong_prompts=True \
     data.filter_overlong_prompts_workers=1 \
     data.truncation='error' \
@@ -94,7 +94,9 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.agent.num_workers=1 \
     actor_rollout_ref.rollout.name=sglang \
     actor_rollout_ref.rollout.mode=sync \
-    actor_rollout_ref.rollout.temperature=0.8 \
+    actor_rollout_ref.rollout.prompt_length=2350 \
+    actor_rollout_ref.rollout.response_length=8600 \
+    actor_rollout_ref.rollout.max_model_len=13001 \
     actor_rollout_ref.rollout.gpu_memory_utilization=0.3 \
     actor_rollout_ref.rollout.enable_chunked_prefill=False \
     actor_rollout_ref.rollout.enforce_eager=True \

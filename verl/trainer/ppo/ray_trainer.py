@@ -178,10 +178,12 @@ def apply_kl_penalty(data: DataProto, kl_ctrl: core_algos.AdaptiveKLController, 
     else:
         avg_reward = 0.0
 
-    metrics = {"actor/reward_kl_penalty": current_kl, "actor/reward_kl_penalty_coeff": beta}
-    metrics = {"reward/after_kl_avg": avg_reward}
-    metrics = {"reward/after_kl_cnt": nonzero_count}
-
+    metrics.update({
+        "actor/reward_kl_penalty": current_kl, 
+        "actor/reward_kl_penalty_coeff": beta,
+        "reward/after_kl_avg": avg_reward,
+        "reward/after_kl_cnt": nonzero_count
+    })
     return data, metrics
 
 
