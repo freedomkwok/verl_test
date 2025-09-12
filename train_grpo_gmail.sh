@@ -75,8 +75,8 @@ python3 -m verl.trainer.main_ppo \
     data.train_batch_size=$((n_gpu * 1)) \
     data.val_batch_size=$n_gpu \
     data.prompt_key='raw_prompt' \
-    data.max_prompt_length=2400 \
-    data.max_response_length=9600 \
+    data.max_prompt_length=$MAX_PROMPT_LENGTH \
+    data.max_response_length=$MAX_RESPONSE_LENGTH \
     data.filter_overlong_prompts=True \
     data.filter_overlong_prompts_workers=1 \
     data.truncation='error' \
@@ -101,7 +101,7 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.prompt_length=$MAX_PROMPT_LENGTH \
     actor_rollout_ref.rollout.response_length=$MAX_RESPONSE_LENGTH \
     actor_rollout_ref.rollout.max_model_len=$MAX_MODEL_LEN \
-    actor_rollout_ref.rollout.gpu_memory_utilization=0.30 \
+    actor_rollout_ref.rollout.gpu_memory_utilization=0.40 \
     actor_rollout_ref.rollout.enable_chunked_prefill=False \
     actor_rollout_ref.rollout.enforce_eager=True \
     actor_rollout_ref.rollout.free_cache_engine=False \
