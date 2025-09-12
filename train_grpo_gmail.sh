@@ -52,7 +52,7 @@ CONFIG_PATH="$PROJECT_DIR/examples/sglang_multiturn/config"
 # CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES torchrun --nproc_per_node=1 verl/trainer/main_ppo.py \
 
 export MAX_PROMPT_LENGTH=2350
-export MAX_RESPONSE_LENGTH=8300
+export MAX_RESPONSE_LENGTH=8000
 export MAX_MODEL_LEN=$(($MAX_PROMPT_LENGTH + $MAX_RESPONSE_LENGTH))
 
 # python3 -m verl.trainer.main_ppo torchrun --nproc_per_node=1 verl/trainer/main_ppo.py \
@@ -101,7 +101,7 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.prompt_length=$MAX_PROMPT_LENGTH \
     actor_rollout_ref.rollout.response_length=$MAX_RESPONSE_LENGTH \
     actor_rollout_ref.rollout.max_model_len=$MAX_MODEL_LEN \
-    actor_rollout_ref.rollout.gpu_memory_utilization=0.40 \
+    actor_rollout_ref.rollout.gpu_memory_utilization=0.3 \
     actor_rollout_ref.rollout.enable_chunked_prefill=False \
     actor_rollout_ref.rollout.enforce_eager=True \
     actor_rollout_ref.rollout.free_cache_engine=False \
