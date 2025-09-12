@@ -123,7 +123,7 @@ class GmailRewardManager(AbstractRewardManager):
 
             # Apply segment-based reward allocation
             self._apply_segment_reward_allocation(
-                reward_tensor, i, reward, segment_positions, valid_response_length, user_turn_rewards
+                reward_tensor, i, reward, segment_positions, valid_response_length, user_turn_rewards, prompt_length
             )
 
             if data_source not in already_print_data_sources:
@@ -155,7 +155,8 @@ class GmailRewardManager(AbstractRewardManager):
         reward_to_distribute: float,
         segment_positions: list[dict[str, Any]] | np.ndarray, 
         valid_response_length: int | torch.Tensor,
-        user_turn_rewards: list[float]
+        user_turn_rewards: list[float],
+        prompt_length: int
     ) -> None:
         """
         Apply segment-based reward allocation using the new segment_positions data structure.
@@ -164,9 +165,10 @@ class GmailRewardManager(AbstractRewardManager):
             reward_tensor: The reward tensor to update
             batch_idx: Index of the current batch item
             reward_to_distribute: The total reward to distribute
-            segment_positions: List of segment dictionaries with start, end, role, is_agent
+            segment_positions: List of segment dictionaries with start, end, role, is_agent (absolute positions)
             valid_response_length: Length of the valid response tokens (int or torch.Tensor)
             user_turn_rewards: List of rewards for each user turn (negative values indicate bad turns)
+            prompt_length: Length of the prompt (used to convert absolute to relative positions)
         """
         # Convert to list if it's a numpy array
         if hasattr(segment_positions, 'tolist'):
@@ -181,11 +183,33 @@ class GmailRewardManager(AbstractRewardManager):
             reward_tensor[batch_idx, valid_response_length - 1] = reward_to_distribute
             return
         
+        # Convert absolute positions to relative positions (relative to response start)
+        # and filter out segments that are not in the response part
+        response_segments = []
+        for seg in segment_positions:
+            # Convert absolute positions to relative positions
+            relative_start = seg["start"] - prompt_length
+            relative_end = seg["end"] - prompt_length
+            
+            # Only include segments that are in the response part (after prompt)
+            if relative_start >= 0 and relative_end < valid_response_length:
+                response_segments.append({
+                    "start": relative_start,
+                    "end": relative_end,
+                    "role": seg["role"],
+                    "is_agent": seg["is_agent"]
+                })
+        
+        if len(response_segments) == 0:
+            # Fallback to last token allocation if no response segments
+            reward_tensor[batch_idx, valid_response_length - 1] = reward_to_distribute
+            return
+        
         # Get reward allocation strategy from instance variables
         reward_allocation = self.reward_allocation
         
         # Find agent response segments
-        all_agent_segments = [seg for seg in segment_positions if seg.get("is_agent", False)]
+        all_agent_segments = [seg for seg in response_segments if seg.get("is_agent", False)]
         
         if len(all_agent_segments) == 0:
             # No agent segments found, fallback to last token
@@ -206,11 +230,14 @@ class GmailRewardManager(AbstractRewardManager):
         
         # Debug logging (can be removed in production)
         if hasattr(self, 'num_examine') and self.num_examine > 0:
+            print(f"[Segment Reward Debug] Prompt length: {prompt_length}")
+            print(f"[Segment Reward Debug] Valid response length: {valid_response_length}")
+            print(f"[Segment Reward Debug] Total response segments: {len(response_segments)}")
             print(f"[Segment Reward Debug] Total agent segments: {len(all_agent_segments)}")
             print(f"[Segment Reward Debug] User turn rewards: {user_turn_rewards}")
             print(f"[Segment Reward Debug] Filtered agent segments: {len(agent_segments)}")
             for i, seg in enumerate(agent_segments):
-                print(f"[Segment Reward Debug] Agent segment {i}: tokens {seg['start']}-{seg['end']}")
+                print(f"[Segment Reward Debug] Agent segment {i}: relative tokens {seg['start']}-{seg['end']}")
         
         # If no agent segments remain after filtering, fallback to last token
         if len(agent_segments) == 0:
