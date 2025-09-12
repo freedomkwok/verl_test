@@ -25,8 +25,8 @@ actor_rollout_ref:
   hybrid_engine: True
   actor:
     # Increase mini batch size to handle large GPU counts
-    ppo_mini_batch_size: 8  # Must be >= number of GPUs
-    ppo_micro_batch_size_per_gpu: 2
+    ppo_mini_batch_size: 2  # Must be >= number of GPUs
+    ppo_micro_batch_size_per_gpu: 1
     use_dynamic_bsz: True
     ppo_max_token_len_per_gpu: 16384
     n: 1  # Must match rollout.n
@@ -41,15 +41,15 @@ actor_rollout_ref:
     
     # Model and distributed configs
     dtype: bfloat16
-    tensor_model_parallel_size: 1
+    tensor_model_parallel_size: 2
     gpu_memory_utilization: 0.5
     ignore_eos: False
     max_num_batched_tokens: 8192
 
     # Length configs (correct rollout fields)
-    prompt_length: 8000
-    response_length: 2000
-    max_model_len: 10000  # prompt_length + response_length
+    prompt_length: 2500
+    response_length: 8000
+    max_model_len: 12500  # prompt_length + response_length
     
     # Multi-turn configs
     multi_turn:
