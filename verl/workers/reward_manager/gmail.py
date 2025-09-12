@@ -146,7 +146,7 @@ class GmailRewardManager(AbstractRewardManager):
         reward_tensor: torch.Tensor, 
         batch_idx: int, 
         reward_to_distribute: float,
-        segment_positions: list[dict[str, int]], 
+        segment_positions: list[dict[str, Any]], 
         valid_response_length: int
     ) -> None:
         """

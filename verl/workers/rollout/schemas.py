@@ -121,7 +121,7 @@ class AsyncRolloutRequest(BaseModel):
     base_conv_with_gen_prompt_end_pos: int
     
     # Segment tracking for reward allocation
-    segment_positions: list[dict[str, int]] = []
+    segment_positions: list[dict[str, Any]] = []
 
     @model_validator(mode="before")
     @classmethod
