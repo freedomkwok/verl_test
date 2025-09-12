@@ -93,7 +93,7 @@ class GmailRewardManager(AbstractRewardManager):
             turn_reward = 0.5 if total_turns <= extra_info["conversation_count"] else 0
             segment_positions = data_item.non_tensor_batch["segment_positions"]
 
-            has_finish = user_turn_rewards[-1] >= 0
+            has_finish = user_turn_rewards[-1] >= 0 if len(user_turn_rewards) > 0 else False
             original_has_finish = extra_info.get("original_success", False)
 
             teacher_ground_truth = extra_info.get("teacher_ground_truth", "")
