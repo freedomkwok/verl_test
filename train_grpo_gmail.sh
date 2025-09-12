@@ -76,8 +76,6 @@ python3 -m verl.trainer.main_ppo \
     data.truncation='error' \
     data.return_raw_chat=True \
     data.dataloader_num_workers=1 \
-    reward_allocation='discounted' \
-    gamma=0.9 \
     actor_rollout_ref.model.path=$BASE_MODEL \
     actor_rollout_ref.actor.optim.lr=1e-6 \
     actor_rollout_ref.model.use_remove_padding=True \
@@ -129,8 +127,6 @@ python3 -m verl.trainer.main_ppo \
     critic.strategy=fsdp2 \
     reward_model.strategy=fsdp2 \
     reward_model.reward_manager=gmail \
-    reward_model.reward_allocation='discounted' \
-    reward_model.gamma=0.9 \
     reward_model.launch_reward_fn_async=False \
     critic.optim.lr=1e-5 \
     critic.model.use_remove_padding=True \
