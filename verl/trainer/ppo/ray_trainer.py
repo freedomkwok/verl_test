@@ -169,9 +169,18 @@ def apply_kl_penalty(data: DataProto, kl_ctrl: core_algos.AdaptiveKLController, 
     # according to https://github.com/huggingface/trl/blob/951ca1841f29114b969b57b26c7d3e80a39f75a0/trl/trainer/ppo_trainer.py#L837
     kl_ctrl.update(current_kl=current_kl, n_steps=batch_size)
     data.batch["token_level_rewards"] = token_level_rewards
+    
+    positive_mask = token_level_scores > 0
+    nonzero_count = (token_level_scores != 0).sum().item()
+
+    if nonzero_count > 0:
+        avg_reward = token_level_scores[positive_mask].mean().item()
+    else:
+        avg_reward = 0.0
 
     metrics = {"actor/reward_kl_penalty": current_kl, "actor/reward_kl_penalty_coeff": beta}
-    metrics = {"reward/token_avg": current_kl}
+    metrics = {"reward/after_kl_avg": avg_reward}
+    metrics = {"reward/after_kl_cnt": nonzero_count}
 
     return data, metrics
 
