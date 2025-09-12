@@ -72,7 +72,7 @@ python3 -m verl.trainer.main_ppo \
     algorithm.adv_estimator=grpo \
     data.train_files=$TRAIN_FILE \
     data.val_files=$TEST_FILE \
-    data.train_batch_size=$((n_gpu * 1)) \
+    data.train_batch_size=$((n_gpu * 2)) \
     data.val_batch_size=$n_gpu \
     data.prompt_key='raw_prompt' \
     data.max_prompt_length=$MAX_PROMPT_LENGTH \
@@ -133,8 +133,9 @@ python3 -m verl.trainer.main_ppo \
     trainer.default_hdfs_dir=null \
     trainer.default_local_dir=/data/verl_checkpoints/$EXPERIMENT_NAME \
     trainer.nnodes=1 \
-    trainer.save_freq=10 \
+    trainer.save_freq=30 \
     trainer.test_freq=5 \
     trainer.total_epochs=100 \
     trainer.val_before_train=False \
+    trainer.save_total_limit=2 \
     2>&1 | tee "/output/logs/$(date +%Y%m%d_%H%M%S).log"
