@@ -54,7 +54,7 @@ CONFIG_PATH="$PROJECT_DIR/examples/sglang_multiturn/config"
 # python3 -m verl.trainer.main_ppo torchrun --nproc_per_node=1 verl/trainer/main_ppo.py \
 #OMP_NUM_THREADS=5 MKL_NUM_THREADS=5 NUMEXPR_NUM_THREADS=5 \
 # NCCL_DEBUG=DEBUG NCCL_DEBUG_SUBSYS=ALL NCCL_P2P_DISABLE=$NCCL_P2P_DISABLE TORCH_DISTRIBUTED_DEBUG=DETAIL PYTHONUNBUFFERED=1 CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES \
-TORCH_COMPILE=0 TORCHINDUCTOR_MAX_AUTOTUNE=0 TORCHINDUCTOR_COMPILE_THREADS=4 TORCHINDUCTOR_NUM_WORKERS=1 \
+TORCH_COMPILE=0 TORCHINDUCTOR_MAX_AUTOTUNE=0 TORCHINDUCTOR_COMPILE_THREADS=4 TORCHINDUCTOR_NUM_WORKERS=2 \
 TORCH_LOGS=-dynamo TORCHINDUCTOR_CACHE_DIR=/tmp/torch_inductor_cache \
 TORCH_DISABLE_COMPILE=1 TORCH_DISABLE_INDUCTOR=1 \
 SGLANG_DISABLE_TP_MEMORY_INBALANCE_CHECK=true \
@@ -68,10 +68,10 @@ python3 -m verl.trainer.main_ppo \
     algorithm.adv_estimator=grpo \
     data.train_files=$TRAIN_FILE \
     data.val_files=$TEST_FILE \
-    data.train_batch_size=$n_gpu \
+    data.train_batch_size=$((n_gpu * 2)) \
     data.val_batch_size=$n_gpu \
     data.prompt_key='raw_prompt' \
-    data.max_prompt_length=6000 \
+    data.max_prompt_length=9000 \
     data.max_response_length=800 \
     data.filter_overlong_prompts=True \
     data.filter_overlong_prompts_workers=1 \
