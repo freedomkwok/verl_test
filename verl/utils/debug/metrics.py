@@ -128,7 +128,7 @@ def calculate_reward_metrics(batch: DataProto) -> dict:
     std_all = float(np.std(all_rewards)) if all_rewards else 0.0
 
     return {
-        "training/avg_last_reward": avg_last,
-        "training/avg_all_rewards": avg_all,
-        "training/std_all_rewards": std_all
+        "reward/avg_last_reward": avg_last,
+        "reward/avg_all_rewards": avg_all,
+        "reward/std_all_rewards": std_all
     }
