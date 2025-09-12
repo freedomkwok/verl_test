@@ -154,7 +154,7 @@ class GmailRewardManager(AbstractRewardManager):
         batch_idx: int, 
         reward_to_distribute: float,
         segment_positions: list[dict[str, Any]] | np.ndarray, 
-        valid_response_length: int,
+        valid_response_length: int | torch.Tensor,
         user_turn_rewards: list[float]
     ) -> None:
         """
@@ -165,12 +165,16 @@ class GmailRewardManager(AbstractRewardManager):
             batch_idx: Index of the current batch item
             reward_to_distribute: The total reward to distribute
             segment_positions: List of segment dictionaries with start, end, role, is_agent
-            valid_response_length: Length of the valid response tokens
+            valid_response_length: Length of the valid response tokens (int or torch.Tensor)
             user_turn_rewards: List of rewards for each user turn (negative values indicate bad turns)
         """
         # Convert to list if it's a numpy array
         if hasattr(segment_positions, 'tolist'):
             segment_positions = segment_positions.tolist()
+        
+        # Convert tensor to scalar if needed
+        if hasattr(valid_response_length, 'item'):
+            valid_response_length = valid_response_length.item()
         
         if len(segment_positions) == 0:
             # Fallback to last token allocation if no segments
