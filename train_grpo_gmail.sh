@@ -68,8 +68,8 @@ python3 -m verl.trainer.main_ppo \
     algorithm.adv_estimator=grpo \
     data.train_files=$TRAIN_FILE \
     data.val_files=$TEST_FILE \
-    data.train_batch_size=1 \
-    data.val_batch_size=1 \
+    data.train_batch_size=$n_gpu \
+    data.val_batch_size=$n_gpu \
     data.prompt_key='raw_prompt' \
     data.max_prompt_length=6000 \
     data.max_response_length=800 \
@@ -109,6 +109,7 @@ python3 -m verl.trainer.main_ppo \
     critic.strategy=fsdp2 \
     reward_model.strategy=fsdp2 \
     reward_model.reward_manager=gmail \
+    reward_model.launch_reward_fn_async=False \
     critic.optim.lr=1e-5 \
     critic.model.use_remove_padding=True \
     critic.model.path=$BASE_MODEL \
