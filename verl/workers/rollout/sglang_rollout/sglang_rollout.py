@@ -262,17 +262,6 @@ class SGLangRollout(BaseRollout):
         port = None
         kwargs = {}
 
-        # Only enable debugpy on rank 0 to avoid multiple debuggers
-        current_rank = getattr(self, '_rank', int(os.environ.get("RANK", "0")))
-        if os.environ.get("DEBUGPY_ACTIVE") != "1" and current_rank == 0:
-            os.environ["DEBUGPY_ACTIVE"] = "1"
-            import debugpy
-            
-            debugpy.listen(("0.0.0.0", 5678))
-            debugpy.wait_for_client()
-        elif current_rank != 0:
-            logger.info(f"Skipping debugpy on rank {current_rank} - only rank 0 will debug")
-
         os.environ.setdefault("SGL_DISABLE_TP_MEMORY_INBALANCE_CHECK", "true")
 
         (

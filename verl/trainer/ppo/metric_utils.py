@@ -488,3 +488,15 @@ def process_validation_metrics(
                 data_src2var2metric2val[data_source][var_name][metric_name] = np.mean(uid_vals)
 
     return data_src2var2metric2val
+
+
+def run_debugpy():
+    current_rank = getattr(self, '_rank', int(os.environ.get("RANK", "0")))
+    if os.environ.get("DEBUGPY_ACTIVE") != "1" and current_rank == 0:
+        os.environ["DEBUGPY_ACTIVE"] = "1"
+        import debugpy
+        
+        debugpy.listen(("0.0.0.0", 5678))
+        debugpy.wait_for_client()
+    elif current_rank != 0:
+        logger.info(f"Skipping debugpy on rank {current_rank} - only rank 0 will debug")
