@@ -90,6 +90,8 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.actor.use_kl_loss=True \
     actor_rollout_ref.actor.kl_loss_coef=0.01 \
     actor_rollout_ref.actor.kl_loss_type=low_var_kl \
+    actor_rollout_ref.actor.clip_ratio_low=0.5 \
+    actor_rollout_ref.actor.clip_ratio_high=0.5 \
     actor_rollout_ref.model.enable_gradient_checkpointing=True \
     actor_rollout_ref.actor.fsdp_config.param_offload=False \
     actor_rollout_ref.actor.fsdp_config.optimizer_offload=False \
@@ -105,7 +107,12 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.enable_chunked_prefill=False \
     actor_rollout_ref.rollout.enforce_eager=True \
     actor_rollout_ref.rollout.free_cache_engine=False \
-    actor_rollout_ref.rollout.val_kwargs.temperature=0.8 \
+    ctor_rollout_ref.rollout.temperature=1.2 \
+    actor_rollout_ref.rollout.top_p=0.7 \
+    actor_rollout_ref.rollout.do_sample=True \
+    actor_rollout_ref.rollout.val_kwargs.temperature=0.75 \
+    actor_rollout_ref.rollout.val_kwargs.top_p=0.92 \
+    actor_rollout_ref.rollout.val_kwargs.top_k=50 \
     actor_rollout_ref.rollout.val_kwargs.do_sample=True \
     actor_rollout_ref.rollout.n=1 \
     actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu=1 \

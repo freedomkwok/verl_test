@@ -18,8 +18,9 @@ gamma: 0.9  # Discount factor for temporal discounting
 
 reward_model:
   reward_manager: gmail
-  reward_allocation: "discounted"  # Pass to reward manager
-  gamma: 0.9  # Pass to reward manager
+  reward_kwargs:
+    reward_allocation: "discounted"
+    gamma: 0.9
 
 actor_rollout_ref:
   hybrid_engine: True
@@ -66,5 +67,5 @@ actor_rollout_ref:
     temperature: 0.8
     top_p: 0.9
     top_k: -1
-    do_sample: true
+    do_sample: True
       

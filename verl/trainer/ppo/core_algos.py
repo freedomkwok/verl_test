@@ -868,7 +868,7 @@ def compute_policy_loss_vanilla(
     # Clamp negative_approx_kl for stability
     negative_approx_kl = torch.clamp(negative_approx_kl, min=-20.0, max=20.0)
     exp_neg_approx_kl = torch.exp(negative_approx_kl)
-    ppo_kl = verl_F.masked_mean(-negative_approx_kl, response_mask)
+    ppo_kl = verl_F.masked_mean(-negative_approx_kl, response_mask)  # """ppo_kl is the nommalized exp_neg_approx_kl"""
 
     pg_losses1 = -advantages * exp_neg_approx_kl
     if cliprange_low is None:
@@ -878,13 +878,21 @@ def compute_policy_loss_vanilla(
     pg_losses2_clipped = -advantages * torch.clamp(
         exp_neg_approx_kl, 1 - cliprange_low, 1 + cliprange_high
     )  # - clip(exp_neg_approx_kl, 1-cliprange, 1+cliprange) * A
+    """reverser reward, smallest reward * big log_loss => get max  
+     training is framed as minimizing loss, the sign is flipped (negative advantages * ratio
+     If advantage A_t > 0 (good action)
+    If advantage A_t < 0 (bad action): => max loss x max log_prob loss => max loss => miniize loss
+     """
     clip_pg_losses_max = torch.maximum(
         pg_losses1, pg_losses2_clipped
     )  # max(-exp_neg_approx_kl * A, -clip(exp_neg_approx_kl, 1-cliprange, 1+cliprange) * A)
     pg_clipfrac = verl_F.masked_mean(torch.gt(pg_losses2_clipped, pg_losses1).float(), response_mask)
 
-    pg_losses3 = -advantages * clip_ratio_c
-    clip_pg_losses_min = torch.min(pg_losses3, clip_pg_losses_max)
+    """when advantage is positive, pg_losses3 is smaller than clip_pg_losses_max, 
+        when advantage is negative, pg_losses3 is larger than clip_pg_losses_max """
+    pg_losses3 = -advantages * clip_ratio_c # hard clip
+    clip_pg_losses_min = torch.min(pg_losses3, clip_pg_losses_max) # 👉 For bad actions, pick the smaller loss (stricter bound).
+
     pg_clipfrac_lower = verl_F.masked_mean(
         torch.gt(clip_pg_losses_max, pg_losses3) * (advantages < 0).float(), response_mask
     )
@@ -898,8 +906,16 @@ def compute_policy_loss_vanilla(
         pg_losses = pg_losses * tis_imp_ratio
 
     pg_loss = agg_loss(loss_mat=pg_losses, loss_mask=response_mask, loss_agg_mode=loss_agg_mode)
-
+    
+    """
+        pg_loss            👉 Expect it to bounce around (stochastic training signal). Over long training, you want it to trend downward.
+        ppo_kl             👉 If training is stable and KL penalty/constraint is effective, this should converge near zero (but not exactly 0, since some drift is required for 
+        pg_clipfrac_lower: 👉 High value = many “bad actions” where the update would have pushed too far, so clipping kicks in.
+        pg_clipfrac:       👉 High value = many “good actions” where the update ratio exceeded the allowed trust region.
+    """
+    
     return pg_loss, pg_clipfrac, ppo_kl, pg_clipfrac_lower
+
 
 
 @register_policy_loss("gspo")
