@@ -51,6 +51,10 @@ PROJECT_DIR="$(pwd)"
 CONFIG_PATH="$PROJECT_DIR/examples/sglang_multiturn/config"
 # CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES torchrun --nproc_per_node=1 verl/trainer/main_ppo.py \
 
+export MAX_PROMPT_LENGTH=2350
+export MAX_RESPONSE_LENGTH=9600
+export MAX_MODEL_LEN=$(($MAX_PROMPT_LENGTH + $MAX_RESPONSE_LENGTH))
+
 # python3 -m verl.trainer.main_ppo torchrun --nproc_per_node=1 verl/trainer/main_ppo.py \
 #OMP_NUM_THREADS=5 MKL_NUM_THREADS=5 NUMEXPR_NUM_THREADS=5 \
 # NCCL_DEBUG=DEBUG NCCL_DEBUG_SUBSYS=ALL NCCL_P2P_DISABLE=$NCCL_P2P_DISABLE TORCH_DISTRIBUTED_DEBUG=DETAIL PYTHONUNBUFFERED=1 CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES \
@@ -94,10 +98,10 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.rollout.agent.num_workers=1 \
     actor_rollout_ref.rollout.name=sglang \
     actor_rollout_ref.rollout.mode=sync \
-    actor_rollout_ref.rollout.prompt_length=2350 \
-    actor_rollout_ref.rollout.response_length=9600 \
-    actor_rollout_ref.rollout.max_model_len=13001 \
-    actor_rollout_ref.rollout.gpu_memory_utilization=0.35 \
+    actor_rollout_ref.rollout.prompt_length=$MAX_PROMPT_LENGTH \
+    actor_rollout_ref.rollout.response_length=$MAX_RESPONSE_LENGTH \
+    actor_rollout_ref.rollout.max_model_len=$MAX_MODEL_LEN \
+    actor_rollout_ref.rollout.gpu_memory_utilization=0.30 \
     actor_rollout_ref.rollout.enable_chunked_prefill=False \
     actor_rollout_ref.rollout.enforce_eager=True \
     actor_rollout_ref.rollout.free_cache_engine=False \
