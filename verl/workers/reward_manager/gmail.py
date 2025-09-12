@@ -90,7 +90,7 @@ class GmailRewardManager(AbstractRewardManager):
             extra_info = data_item.non_tensor_batch.get("extra_info", {})
             user_turn_rewards = data_item.non_tensor_batch["reward_scores"]["user_turn_rewards"]
             total_turns = len(data_item.non_tensor_batch["messages"]["messages"])
-            turn_reward = 1 * 0.5 if total_turns < extra_info["conversation_count"] else 0
+            turn_reward = 0.5 if total_turns <= extra_info["conversation_count"] else 0
             segment_positions = data_item.non_tensor_batch["segment_positions"]
 
             has_finish = user_turn_rewards[-1] >= 0
@@ -101,11 +101,11 @@ class GmailRewardManager(AbstractRewardManager):
 
             success_reward = 0.0
             if original_has_finish and has_finish:
-                success_reward += 0.5
+                success_reward += 0.8
             elif original_has_finish and not has_finish:
                 success_reward -= 0.6
             elif not original_has_finish and has_finish:
-                success_reward += 1.0
+                success_reward += 2.0
 
             score = {
                 "score": success_reward + turn_reward,
