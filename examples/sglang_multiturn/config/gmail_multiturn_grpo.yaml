@@ -33,7 +33,7 @@ actor_rollout_ref:
 
   rollout:
     name: sglang
-    mode: async
+    mode: sync
     load_format: dummy
     enforce_eager: True
     free_cache_engine: True
