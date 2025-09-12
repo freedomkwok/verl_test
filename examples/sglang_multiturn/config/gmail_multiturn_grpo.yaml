@@ -7,9 +7,9 @@ defaults:
   - _self_
 
 data:
-  max_prompt_length: 6000
-  max_response_length: 1024
-  train_batch_size: 4
+  max_prompt_length: 2400
+  max_response_length: 9600
+  train_batch_size: 2
   return_raw_chat: True
 
 # Reward allocation configuration
@@ -42,7 +42,7 @@ actor_rollout_ref:
     # Model and distributed configs
     dtype: bfloat16
     tensor_model_parallel_size: 2
-    gpu_memory_utilization: 0.5
+    gpu_memory_utilization: 0.4
     ignore_eos: False
     max_num_batched_tokens: 8192
 
