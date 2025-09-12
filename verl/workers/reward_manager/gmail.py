@@ -28,9 +28,10 @@ from verl.workers.reward_manager.abstract import AbstractRewardManager
 class GmailRewardManager(AbstractRewardManager):
     """The reward manager."""
 
-    def __init__(self, tokenizer, num_examine, compute_score=None, reward_fn_key="data_source") -> None:
+    def __init__(self, tokenizer, num_examine, compute_score=None, reward_fn_key="data_source", 
+                 reward_allocation="discounted", gamma=0.9) -> None:
         """
-        Initialize the NaiveRewardManager instance.
+        Initialize the GmailRewardManager instance.
 
         Args:
             tokenizer: The tokenizer used to decode token IDs into text.
@@ -38,11 +39,16 @@ class GmailRewardManager(AbstractRewardManager):
             compute_score: A function to compute the reward score. If None, `default_compute_score` will be used.
             reward_fn_key: The key used to access the data source in the non-tensor batch data. Defaults to
                 "data_source".
+            reward_allocation: The reward allocation strategy. Options: "last_token", "uniform_positive", 
+                "discounted", "uniform_discounted". Defaults to "discounted".
+            gamma: The discount factor for temporal discounting. Defaults to 0.9.
         """
         self.tokenizer = tokenizer  # Store the tokenizer for decoding token IDs
         self.num_examine = num_examine  # the number of batches of decoded responses to print to the console
         self.compute_score = compute_score or default_compute_score
-        self.reward_fn_key = reward_fn_key  # Store the key for accessing the data source
+        self.reward_fn_key = reward_fn_key
+        self.reward_allocation = reward_allocation
+        self.gamma = gamma  # Store the key for accessing the data source
 
     def __call__(self, data: DataProto, return_dict: bool = False) -> torch.Tensor | dict[str, Any]:
         """We will expand this function gradually based on the available datasets"""
@@ -171,8 +177,8 @@ class GmailRewardManager(AbstractRewardManager):
             reward_tensor[batch_idx, valid_response_length - 1] = reward_to_distribute
             return
         
-        # Get reward allocation strategy from config
-        reward_allocation = getattr(self.config, 'reward_allocation', 'last_token')
+        # Get reward allocation strategy from instance variables
+        reward_allocation = self.reward_allocation
         
         # Find agent response segments
         all_agent_segments = [seg for seg in segment_positions if seg.get("is_agent", False)]
@@ -206,7 +212,7 @@ class GmailRewardManager(AbstractRewardManager):
         if len(agent_segments) == 0:
             reward_tensor[batch_idx, valid_response_length - 1] = reward_to_distribute
             return
-        
+
         if reward_allocation == "last_token":
             # Assign reward only to the last token of the last agent segment
             last_segment = agent_segments[-1]
@@ -236,7 +242,7 @@ class GmailRewardManager(AbstractRewardManager):
                 
         elif reward_allocation == "discounted":
             # Distribute reward starting from the last agent segment, discounted backward
-            gamma = getattr(self.config, 'gamma', 0.9)  # Default discount factor
+            gamma = self.gamma  # Use instance variable
             current_reward = reward_to_distribute
             
             # Iterate segments backward (from last to first)
@@ -265,7 +271,7 @@ class GmailRewardManager(AbstractRewardManager):
                     base_reward_per_token = reward_to_distribute / total_agent_tokens
                     
                     # Apply temporal discounting
-                    gamma = getattr(self.config, 'gamma', 0.9)
+                    gamma = self.gamma  # Use instance variable
                     for i, seg in enumerate(agent_segments):
                         start = seg["start"]
                         end = min(seg["end"], valid_response_length - 1)

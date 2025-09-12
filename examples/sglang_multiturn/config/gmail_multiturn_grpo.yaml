@@ -16,6 +16,11 @@ data:
 reward_allocation: "discounted"  # Options: "last_token", "uniform_positive", "discounted", "uniform_discounted"
 gamma: 0.9  # Discount factor for temporal discounting
 
+reward_model:
+  reward_manager: gmail
+  reward_allocation: "discounted"  # Pass to reward manager
+  gamma: 0.9  # Pass to reward manager
+
 actor_rollout_ref:
   hybrid_engine: True
   actor:
