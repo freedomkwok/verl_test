@@ -68,7 +68,7 @@ python3 -m verl.trainer.main_ppo \
     algorithm.adv_estimator=grpo \
     data.train_files=$TRAIN_FILE \
     data.val_files=$TEST_FILE \
-    data.train_batch_size=$((n_gpu) * 1) \
+    data.train_batch_size=$n_gpu \
     data.val_batch_size=$n_gpu \
     data.prompt_key='raw_prompt' \
     data.max_prompt_length=2500 \
@@ -81,7 +81,7 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.model.path=$BASE_MODEL \
     actor_rollout_ref.actor.optim.lr=1e-6 \
     actor_rollout_ref.model.use_remove_padding=True \
-    actor_rollout_ref.actor.ppo_mini_batch_size=$((n_gpu)) \
+    actor_rollout_ref.actor.ppo_mini_batch_size=$n_gpu \
     actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=1 \
     actor_rollout_ref.actor.use_kl_loss=True \
     actor_rollout_ref.actor.kl_loss_coef=0.01 \
