@@ -29,7 +29,7 @@ class GmailRewardManager(AbstractRewardManager):
     """The reward manager."""
 
     def __init__(self, tokenizer, num_examine, compute_score=None, reward_fn_key="data_source", 
-                 reward_allocation="last_token", gamma=0.9) -> None:
+                 reward_allocation="discounted", gamma=0.9) -> None:
         """
         Initialize the GmailRewardManager instance.
 
