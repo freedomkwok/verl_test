@@ -15,6 +15,7 @@
 from collections import defaultdict
 from typing import Any
 
+import numpy as np
 import torch
 
 from verl import DataProto
@@ -116,7 +117,7 @@ class GmailRewardManager(AbstractRewardManager):
 
             # Apply segment-based reward allocation
             self._apply_segment_reward_allocation(
-                reward_tensor, i, reward, segment_positions, valid_response_length
+                reward_tensor, i, reward, segment_positions, valid_response_length, user_turn_rewards
             )
 
             if data_source not in already_print_data_sources:
@@ -146,8 +147,9 @@ class GmailRewardManager(AbstractRewardManager):
         reward_tensor: torch.Tensor, 
         batch_idx: int, 
         reward_to_distribute: float,
-        segment_positions: list[dict[str, Any]], 
-        valid_response_length: int
+        segment_positions: list[dict[str, Any]] | np.ndarray, 
+        valid_response_length: int,
+        user_turn_rewards: list[float]
     ) -> None:
         """
         Apply segment-based reward allocation using the new segment_positions data structure.
@@ -158,8 +160,13 @@ class GmailRewardManager(AbstractRewardManager):
             reward_to_distribute: The total reward to distribute
             segment_positions: List of segment dictionaries with start, end, role, is_agent
             valid_response_length: Length of the valid response tokens
+            user_turn_rewards: List of rewards for each user turn (negative values indicate bad turns)
         """
-        if not segment_positions:
+        # Convert to list if it's a numpy array
+        if hasattr(segment_positions, 'tolist'):
+            segment_positions = segment_positions.tolist()
+        
+        if len(segment_positions) == 0:
             # Fallback to last token allocation if no segments
             reward_tensor[batch_idx, valid_response_length - 1] = reward_to_distribute
             return
@@ -168,10 +175,35 @@ class GmailRewardManager(AbstractRewardManager):
         reward_allocation = getattr(self.config, 'reward_allocation', 'last_token')
         
         # Find agent response segments
-        agent_segments = [seg for seg in segment_positions if seg.get("is_agent", False)]
+        all_agent_segments = [seg for seg in segment_positions if seg.get("is_agent", False)]
         
-        if not agent_segments:
+        if len(all_agent_segments) == 0:
             # No agent segments found, fallback to last token
+            reward_tensor[batch_idx, valid_response_length - 1] = reward_to_distribute
+            return
+        
+        # Filter out agent segments that correspond to negative user turn rewards
+        # The logic: each agent response corresponds to a user turn, and we only reward
+        # agent responses if the corresponding user turn has a non-negative reward
+        agent_segments = []
+        user_turn_idx = 0  # Track which user turn we're on
+        
+        for seg in all_agent_segments:
+            # Check if this agent segment should be rewarded based on user turn rewards
+            if user_turn_idx < len(user_turn_rewards) and user_turn_rewards[user_turn_idx] >= 0:
+                agent_segments.append(seg)
+            user_turn_idx += 1
+        
+        # Debug logging (can be removed in production)
+        if hasattr(self, 'num_examine') and self.num_examine > 0:
+            print(f"[Segment Reward Debug] Total agent segments: {len(all_agent_segments)}")
+            print(f"[Segment Reward Debug] User turn rewards: {user_turn_rewards}")
+            print(f"[Segment Reward Debug] Filtered agent segments: {len(agent_segments)}")
+            for i, seg in enumerate(agent_segments):
+                print(f"[Segment Reward Debug] Agent segment {i}: tokens {seg['start']}-{seg['end']}")
+        
+        # If no agent segments remain after filtering, fallback to last token
+        if len(agent_segments) == 0:
             reward_tensor[batch_idx, valid_response_length - 1] = reward_to_distribute
             return
         
