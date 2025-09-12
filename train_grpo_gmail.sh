@@ -65,7 +65,7 @@ DEBUGGY_LOCAL=True WANDB_DISABLE_ARTIFACTS=True WANDB_DISABLE_CODE=True WANDB_CO
 python3 -m verl.trainer.main_ppo \
     --config-path="$CONFIG_PATH" \
     --config-name='gmail_multiturn_grpo' \
-    algorithm.adv_estimator=grpo \config
+    algorithm.adv_estimator=grpo \
     data.train_files=$TRAIN_FILE \
     data.val_files=$TEST_FILE \
     data.train_batch_size=$((n_gpu * 2)) \
