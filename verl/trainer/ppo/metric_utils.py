@@ -528,12 +528,11 @@ def calulate_agent_metrics(batch: DataProto) -> dict[str, Any]:
     return metrics
 
 def run_debugpy():
+    import debugpy
+    import os
     current_rank = os.environ.get("RANK", -1)
     if os.environ.get("DEBUGPY_ACTIVE") != "1" and current_rank == 0:
         os.environ["DEBUGPY_ACTIVE"] = "1"
-        import debugpy
         
         debugpy.listen(("0.0.0.0", 5678))
         debugpy.wait_for_client()
-    elif current_rank != 0:
-        logger.info(f"Skipping debugpy on rank {current_rank} - only rank 0 will debug")
