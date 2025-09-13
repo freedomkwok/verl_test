@@ -144,5 +144,4 @@ python3 -m verl.trainer.main_ppo \
     trainer.test_freq=5 \
     trainer.total_epochs=100 \
     trainer.val_before_train=False \
-    trainer.save_total_limit=2 \
     2>&1 | tee "/output/logs/$(date +%Y%m%d_%H%M%S).log"
