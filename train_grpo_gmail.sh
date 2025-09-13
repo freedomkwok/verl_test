@@ -123,6 +123,8 @@ python3 -m verl.trainer.main_ppo \
     reward_model.strategy=fsdp2 \
     reward_model.reward_manager=gmail \
     reward_model.launch_reward_fn_async=False \
+    reward_model.reward_kwargs.reward_allocation=last_token \
+    reward_model.reward_kwargs.gamma=0.88 \
     critic.optim.lr=1e-5 \
     critic.model.use_remove_padding=True \
     critic.model.path=$BASE_MODEL \

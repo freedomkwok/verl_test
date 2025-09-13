@@ -12,9 +12,6 @@ data:
   train_batch_size: 2
   return_raw_chat: True
 
-# Reward allocation configuration
-reward_allocation: "discounted"  # Options: "last_token", "uniform_positive", "discounted", "uniform_discounted"
-gamma: 0.9  # Discount factor for temporal discounting
 
 reward_model:
   reward_manager: gmail
