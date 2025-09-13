@@ -1209,7 +1209,9 @@ class SGLangRollout(BaseRollout):
             reward_scores.append(req.reward_scores)
             multi_modal_inputs.append(req.multi_modal_inputs)
             request_ids.append(req.request_id)
-            metrics.append(req.metrics["gmail"][0])
+            if "gmail" in req.metrics:
+                metrics.append(req.metrics["gmail"][0])
+
             # Track conversation segment positions for reward allocation
             segment_positions.append(req.segment_positions)
             
