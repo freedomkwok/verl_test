@@ -183,17 +183,6 @@ def calulate_agent_metrics(batch: DataProto) -> dict:
     return metrics
 
 
-def with_rank(func):
-    @functools.wraps(func)
-    def wrapper(self, *args, **kwargs):
-        # Auto-detect _rank from the class, else fallback to env
-        rank = getattr(self, "_rank", int(os.environ.get("RANK", "0")))
-        # Inject into kwargs
-        kwargs.setdefault("rank", rank)
-        return func(self, *args, **kwargs)
-    return wrapper
-
-@with_rank
 def run_debugpy(rank=None):
     if os.environ.get("DEBUGPY_ACTIVE") != "1" and rank == 0:
         os.environ["DEBUGPY_ACTIVE"] = "1"

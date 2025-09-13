@@ -265,8 +265,8 @@ class SGLangRollout(BaseRollout):
         os.environ.setdefault("SGL_DISABLE_TP_MEMORY_INBALANCE_CHECK", "true")
 
         from verl.utils.debug.metrics import run_debugpy
-        run_debugpy(self)
-
+        run_debugpy(getattr(self, "_rank", int(os.environ.get("RANK", "0"))))
+        
         (
             self._tool_schemas,
             self._tool_map,
