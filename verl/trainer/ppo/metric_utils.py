@@ -119,7 +119,7 @@ def compute_data_metrics(batch: DataProto, use_critic: bool = True) -> dict[str,
     response_length = response_info["response_length"]
 
     aborted_mask = (response_length == 0).bool()
-    non_aborted_mask = ~aborted_mask
+    non_aborted_mask = ~aborted_mask    
 
     non_aborted_sequence_score = sequence_score[non_aborted_mask]
     non_aborted_sequence_reward = sequence_reward[non_aborted_mask]
@@ -489,6 +489,43 @@ def process_validation_metrics(
 
     return data_src2var2metric2val
 
+def calulate_agent_metrics(batch: DataProto) -> dict[str, Any]:
+    metrics = {}
+    agent_metrics = batch.non_tensor_batch.pop("metrics", None)
+    
+    if agent_metrics is None or len(agent_metrics) == 0:
+        return metrics
+    
+    # Collect all values for each metric key
+    metric_values = {}
+    for metric in agent_metrics:
+        for key, value in metric.items():
+            if key not in metric_values:
+                metric_values[key] = []
+            metric_values[key].append(value)
+    
+    # Calculate statistics for each metric
+    for key, values in metric_values.items():
+        if len(values) > 0:
+            # Convert to numeric values if possible
+            numeric_values = []
+            for v in values:
+                try:
+                    numeric_values.append(float(v))
+                except (ValueError, TypeError):
+                    # Skip non-numeric values
+                    continue
+            
+            if len(numeric_values) > 0:
+                metrics[f"{key}_max"] = max(numeric_values)
+                metrics[f"{key}_avg"] = sum(numeric_values) / len(numeric_values)
+                metrics[f"{key}_total"] = sum(numeric_values)
+                metrics[f"{key}_count"] = len(numeric_values)
+            else:
+                # If no numeric values, just store the raw values
+                metrics[key] = values
+    
+    return metrics
 
 def run_debugpy():
     current_rank = getattr(self, '_rank', int(os.environ.get("RANK", "0")))

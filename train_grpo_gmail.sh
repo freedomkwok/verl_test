@@ -72,7 +72,7 @@ python3 -m verl.trainer.main_ppo \
     algorithm.adv_estimator=grpo \
     data.train_files=$TRAIN_FILE \
     data.val_files=$TEST_FILE \
-    data.train_batch_size=$((n_gpu * 2)) \
+    data.train_batch_size=$((n_gpu)) \
     data.val_batch_size=$n_gpu \
     data.prompt_key='raw_prompt' \
     data.max_prompt_length=$MAX_PROMPT_LENGTH \

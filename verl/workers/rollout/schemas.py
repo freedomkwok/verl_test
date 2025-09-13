@@ -511,6 +511,9 @@ class AsyncRolloutRequest(BaseModel):
             new_multi_modal_inputs=multi_modal_inputs,
         )
 
+    def update_gmail_matrics(self, metrics: dict[str, Any]) -> None:
+        self.metrics["gmail"] = [metrics]
+
     def update_metrics(self, metrics: Any, tool_id: str) -> None:
         """
         metrics: should be a dict of tools_name -> Any

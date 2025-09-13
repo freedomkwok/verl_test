@@ -967,6 +967,8 @@ class SGLangRollout(BaseRollout):
                 should_terminate_sequence, content, reward, metrics = await interaction.generate_response(
                     _req.request_id, messages, **_req.interaction_kwargs
                 )
+                _req.update_gmail_matrics(metrics)
+
                 user_turn_rewards.append(reward)
                 if should_terminate_sequence:
                     finish_reason_type = FinishReasonTypeEnum.STOP
@@ -1159,6 +1161,7 @@ class SGLangRollout(BaseRollout):
         reward_scores = []
         multi_modal_inputs = []
         request_ids = []
+        metrics = []
         # Track conversation segment positions for reward allocation
         segment_positions = []
         if self.config.calculate_log_probs:
@@ -1203,7 +1206,7 @@ class SGLangRollout(BaseRollout):
             reward_scores.append(req.reward_scores)
             multi_modal_inputs.append(req.multi_modal_inputs)
             request_ids.append(req.request_id)
-            
+            metrics.append(req.metrics["gmail"][0])
             # Track conversation segment positions for reward allocation
             segment_positions.append(req.segment_positions)
             
@@ -1318,6 +1321,7 @@ class SGLangRollout(BaseRollout):
             "request_id": np.array(request_ids),
             # Store segment position information for reward allocation
             "segment_positions": np.array(segment_positions, dtype=object),
+            "metrics": np.array(metrics, dtype=object),
         }
 
         is_multimodal = isinstance(self.processing_class, ProcessorMixin) and (

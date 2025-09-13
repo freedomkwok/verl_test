@@ -145,7 +145,8 @@ class GmailInteraction(BaseInteraction):
                     reward = float(step_result.get("reward", 0.0))
                     instance_data["reward"] = reward # defaul correct is 0, erorr is -0.2, total return is 1
                     done = step_result.get("done", False)
-                    
+                    metrics = step_result.get("metric", {})
+
                     response = instance_data["observation"]
                     # Check if episode is done
                     if done:
@@ -155,7 +156,8 @@ class GmailInteraction(BaseInteraction):
                         # response = f"Step {instance_data['step']}: Action executed. Reward: {reward}. Observation: {instance_data['observation']}"
                         should_terminate_sequence = False
                     
-                    return should_terminate_sequence, response, instance_data["reward"], {}
+         
+                    return should_terminate_sequence, response, instance_data["reward"], metrics
                     
                 except Exception as e:
                     logger.error(f"Failed to step Gmail environment: {e}")
