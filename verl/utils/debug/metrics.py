@@ -132,3 +132,51 @@ def calculate_reward_metrics(batch: DataProto) -> dict:
         "reward/avg_all_rewards": avg_all,
         "reward/std_all_rewards": std_all
     }
+
+def calulate_agent_metrics(batch: DataProto) -> dict[str, Any]:
+    metrics = {}
+    agent_metrics = batch.non_tensor_batch.pop("metrics", None)
+    
+    if agent_metrics is None or len(agent_metrics) == 0:
+        return metrics
+    
+    # Collect all values for each metric key
+    metric_values = {}
+    for metric in agent_metrics:
+        for key, value in metric.items():
+            if key not in metric_values:
+                metric_values[key] = []
+            metric_values[key].append(value)
+    
+    # Calculate statistics for each metric
+    for key, values in metric_values.items():
+        if len(values) > 0:
+            # Convert to numeric values if possible
+            numeric_values = []
+            for v in values:
+                try:
+                    numeric_values.append(float(v))
+                except (ValueError, TypeError):
+                    # Skip non-numeric values
+                    continue
+            
+            if len(numeric_values) > 0:
+                metrics[f"{key}_max"] = max(numeric_values)
+                metrics[f"{key}_avg"] = sum(numeric_values) / len(numeric_values)
+                metrics[f"{key}_total"] = sum(numeric_values)
+                metrics[f"{key}_count"] = len(numeric_values)
+            else:
+                # If no numeric values, just store the raw values
+                metrics[key] = values
+    
+    return metrics
+
+def run_debugpy():
+    import debugpy
+    import os
+    current_rank = os.environ.get("RANK", -1)
+    if os.environ.get("DEBUGPY_ACTIVE") != "1" and current_rank == 0:
+        os.environ["DEBUGPY_ACTIVE"] = "1"
+        
+        debugpy.listen(("0.0.0.0", 5678))
+        debugpy.wait_for_client()
