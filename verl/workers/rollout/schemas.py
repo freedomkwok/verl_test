@@ -512,7 +512,12 @@ class AsyncRolloutRequest(BaseModel):
         )
 
     def update_gmail_matrics(self, metrics: dict[str, Any]) -> None:
-        self.metrics["gmail"] = [metrics]
+        if self.metrics.get("gmail") is None:
+            self.metrics["gmail"] = []
+        if len(self.metrics["gmail"]) == 0:
+            self.metrics["gmail"].append(metrics)
+        else:
+            self.metrics["gmail"][0] = metrics
 
     def update_metrics(self, metrics: Any, tool_id: str) -> None:
         """
