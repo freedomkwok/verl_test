@@ -100,13 +100,23 @@ def calculate_debug_metrics(data: DataProto) -> dict:
     response_mask_bool = response_mask.bool()
     pearson_corrcoef = pearson_correlation_coefficient(actor_probs, rollout_probs, response_mask_bool)
     rollout_probs_diff = calculate_log_prob_diff(actor_probs, rollout_probs, response_mask_bool)
-    return {
-        "training/rollout_probs_diff_valid": 1,
-        "training/rollout_probs_diff_max": torch.max(rollout_probs_diff).detach().item(),
-        "training/rollout_probs_diff_mean": torch.mean(rollout_probs_diff).detach().item(),
-        "training/rollout_probs_diff_std": torch.std(rollout_probs_diff).detach().item(),
-        "training/rollout_actor_probs_pearson_corr": pearson_corrcoef,
-    }
+
+    if rollout_probs_diff.numel() > 0:
+        return {
+            "training/rollout_probs_diff_valid": 1,
+            "training/rollout_probs_diff_max": torch.max(rollout_probs_diff).detach().item(),
+            "training/rollout_probs_diff_mean": torch.mean(rollout_probs_diff).detach().item(),
+            "training/rollout_probs_diff_std": torch.std(rollout_probs_diff).detach().item(),
+            "training/rollout_actor_probs_pearson_corr": pearson_corrcoef,
+        }
+    else:
+       return {
+            "training/rollout_probs_diff_valid": 1,
+            "training/rollout_probs_diff_max": 0.0,
+            "training/rollout_probs_diff_mean":  0.0,
+            "training/rollout_probs_diff_std":  0.0,
+            "training/rollout_actor_probs_pearson_corr": pearson_corrcoef,
+        }
 
 
 def calculate_reward_metrics(batch: DataProto) -> dict:
@@ -164,7 +174,6 @@ def calulate_agent_metrics(batch: DataProto) -> dict:
                 metrics[f"{key}_max"] = max(numeric_values)
                 metrics[f"{key}_avg"] = sum(numeric_values) / len(numeric_values)
                 metrics[f"{key}_total"] = sum(numeric_values)
-                metrics[f"{key}_count"] = len(numeric_values)
             else:
                 # If no numeric values, just store the raw values
                 metrics[key] = values
@@ -174,9 +183,10 @@ def calulate_agent_metrics(batch: DataProto) -> dict:
 def run_debugpy():
     import debugpy
     import os
-    current_rank = os.environ.get("RANK", -1)
+    current_rank = getattr(self, '_rank', int(os.environ.get("RANK", "0")))
     if os.environ.get("DEBUGPY_ACTIVE") != "1" and current_rank == 0:
         os.environ["DEBUGPY_ACTIVE"] = "1"
+        import debugpy
         
         debugpy.listen(("0.0.0.0", 5678))
         debugpy.wait_for_client()

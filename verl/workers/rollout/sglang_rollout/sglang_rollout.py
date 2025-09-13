@@ -266,6 +266,7 @@ class SGLangRollout(BaseRollout):
 
         from verl.utils.debug.metrics import run_debugpy
         run_debugpy()
+        
         (
             self._tool_schemas,
             self._tool_map,
