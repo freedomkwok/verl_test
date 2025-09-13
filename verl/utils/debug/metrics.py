@@ -133,7 +133,7 @@ def calculate_reward_metrics(batch: DataProto) -> dict:
         "reward/std_all_rewards": std_all
     }
 
-def calulate_agent_metrics(batch: DataProto) -> dict[str, Any]:
+def calulate_agent_metrics(batch: DataProto) -> dict:
     metrics = {}
     agent_metrics = batch.non_tensor_batch.pop("metrics", None)
     
