@@ -16,7 +16,9 @@ import logging
 import torch
 import numpy as np
 from verl.protocol import DataProto
-
+import os
+import functools
+   
 logger = logging.getLogger(__file__)
 
 
@@ -180,11 +182,20 @@ def calulate_agent_metrics(batch: DataProto) -> dict:
     
     return metrics
 
-def run_debugpy():
-    import debugpy
-    import os
-    current_rank = getattr(self, '_rank', int(os.environ.get("RANK", "0")))
-    if os.environ.get("DEBUGPY_ACTIVE") != "1" and current_rank == 0:
+
+def with_rank(func):
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        # Auto-detect _rank from the class, else fallback to env
+        rank = getattr(self, "_rank", int(os.environ.get("RANK", "0")))
+        # Inject into kwargs
+        kwargs.setdefault("rank", rank)
+        return func(self, *args, **kwargs)
+    return wrapper
+
+@with_rank
+def run_debugpy(rank=None):
+    if os.environ.get("DEBUGPY_ACTIVE") != "1" and rank == 0:
         os.environ["DEBUGPY_ACTIVE"] = "1"
         import debugpy
         
